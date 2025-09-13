@@ -44,7 +44,7 @@ app.use((req: Request, _res: Response, next: NextFunction) => {
 });
 
 app.use('/api/admin/auth', adminAuthRouter);
-app.use('/api/events', createEventRouter);
+app.use('/api/event', createEventRouter);
 
 app.get('/health', (_req: Request, res: Response) => {
 	res.status(200).json({
