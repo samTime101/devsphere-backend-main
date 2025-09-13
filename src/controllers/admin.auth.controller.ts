@@ -1,12 +1,10 @@
 import type { Request, Response } from 'express';
-import { ErrorResponse, SuccessResponse } from '../dtos/index.js';
-import adminAuthService from '../services/admin.auth.service.js';
+import { ErrorResponse, SuccessResponse } from '@/dtos/index.js';
+import adminAuthService from '@/services/admin.auth.service.js';
 
-interface SignupRequest {
-    email: string;
-    password: string;
-    memberId?: string;
-}
+// MODIFIED BY SAMIP REGMI, 
+// I HAVE ONLY ADDED SIGNUP INTERFACE, NOTHING ELSE
+import type { SignupRequest } from '@/utils/types/signup.js';
 
 
 export class AdminAuthController {
