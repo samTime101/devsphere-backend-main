@@ -4,16 +4,11 @@ model User {
   password  String
   role      Role     @default(MODERATOR)
   memberId  String?  @map("member_id")
-  member    members? @relation(fields: [memberId], references: [id])
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
+  member    members? @relation(fields: [memberId], references: [id])
 
   @@map("user")
-}
-
-enum Role {
-  ADMIN
-  MODERATOR
 }
 
 model Project {
@@ -22,15 +17,15 @@ model Project {
   githubLink          String?               @map("github_link")
   demoLink            String?               @map("demo_link")
   tagId               String
-  tag                 Tag                   @relation(fields: [tagId], references: [id])
   tech_stack          String[]
-  description         String                @db.Text
+  description         String
   thumbnailUrl        String?               @map("thumbnail_url")
   createdAt           DateTime              @default(now()) @map("created_at")
   updatedAt           DateTime              @updatedAt @map("updated_at")
+  contributorId       String?
   ProjectContributors ProjectContributors[]
   Contributor         Contributor?          @relation(fields: [contributorId], references: [id])
-  contributorId       String?
+  tag                 Tag                   @relation(fields: [tagId], references: [id])
 
   @@map("projects")
 }
@@ -44,13 +39,12 @@ model Tag {
 }
 
 model Contributor {
-  id             String  @id @default(uuid())
-  name           String
-  avatarUrl      String? @map("avatar_url")
-  githubUsername String? @map("github_username")
-
-  Project             Project[]
+  id                  String                @id @default(uuid())
+  name                String
+  avatarUrl           String?               @map("avatar_url")
+  githubUsername      String?               @map("github_username")
   ProjectContributors ProjectContributors[]
+  Project             Project[]
 
   @@map("contributors")
 }
@@ -59,8 +53,8 @@ model ProjectContributors {
   id            String      @id @default(uuid())
   projectId     String      @map("project_id")
   contributorId String      @map("contributor_id")
-  project       Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
   contributor   Contributor @relation(fields: [contributorId], references: [id], onDelete: Cascade)
+  project       Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
   @@map("project_contributors")
 }
@@ -68,7 +62,7 @@ model ProjectContributors {
 model Events {
   id            String          @id @default(uuid())
   name          String
-  description   String          @db.Text
+  description   String
   status        EventStatus     @default(UPCOMING)
   EventSchedule EventSchedule[]
 
@@ -79,17 +73,11 @@ model EventSchedule {
   id          String   @id @default(uuid())
   startDate   DateTime @map("start_date")
   endDate     DateTime @map("end_date")
-  description String   @db.Text
+  description String
   eventId     String   @map("event_id")
   event       Events   @relation(fields: [eventId], references: [id], onDelete: Cascade)
 
   @@map("event_schedule")
-}
-
-enum EventStatus {
-  UPCOMING
-  ONGOING
-  COMPLETED
 }
 
 model members {
@@ -100,4 +88,15 @@ model members {
   User User[]
 
   @@map("members")
+}
+
+enum Role {
+  ADMIN
+  MODERATOR
+}
+
+enum EventStatus {
+  UPCOMING
+  ONGOING
+  COMPLETED
 }
