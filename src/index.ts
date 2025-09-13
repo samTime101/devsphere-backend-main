@@ -7,7 +7,7 @@ import cookieParser from "cookie-parser"
 import prisma from '@/db/prisma';
 import responseHandler from "./middleware/response.handler";
 import adminAuthRouter from "@/routers/admin.auth.router";
-import createEventRouter from "./routers/events/create.router";
+import createEventRouter from "@/routers/events/create.router";
 
 const app = express();
 const port = process.env.PORT || 3000;
