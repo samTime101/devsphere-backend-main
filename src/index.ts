@@ -6,9 +6,10 @@ import cors from "cors";
 import morgan from "morgan"
 import cookieParser from "cookie-parser"
 import responseHandler from "./middleware/response.handler";
-import router from "@/routers";
+import adminAuthRouter from "@/routers/admin.auth.router";
 
 const app = express();
+
 const port = process.env.PORT || 3000;
 const NODE_ENV = process.env.NODE_ENV || 'development';
 const corsOptions = {
@@ -42,10 +43,7 @@ app.use((req: Request, _res: Response, next: NextFunction) => {
 	next();
 });
 
-app.use(express.json());
-
-// API routes here
-app.use('/api', router);
+app.use('/api/admin/auth', adminAuthRouter);
 
 app.get('/health', (_req: Request, res: Response) => {
 	res.status(200).json({

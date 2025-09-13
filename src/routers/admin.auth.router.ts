@@ -1,8 +1,7 @@
 import { Router } from 'express';
-import adminAuthController from '../controllers/admin.auth.controller';
+import adminAuthController from '../controllers/admin.auth.controller.js';
 
 const adminAuthRouter = Router();
-adminAuthRouter.post('/login', adminAuthController.login);
-adminAuthRouter.post('/logout', adminAuthController.logout);
+adminAuthRouter.post('/signup', adminAuthController.signup);
 
 export default adminAuthRouter;
