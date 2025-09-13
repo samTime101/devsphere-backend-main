@@ -11,8 +11,12 @@ import createEventService from "@/services/event/create.service";
 // STATUS CODE IMPORTS
 import { HTTP } from '@/utils/constants';
 // INTERFACE FOR REQUEST 
-import type { Event } from '@/utils/types/event';
 
+// EVENT TYPE
+import type { Event as EventType } from '@/utils/types/event';
+
+// ZOD SCHEMA IMPORT FOR PARSING AND VALIDATION
+import { Event } from '@/utils/types/event';
 
 class CreateEventController {
     // CONTROLLER METHOD FOR CREATING EVENT
@@ -30,13 +34,20 @@ class CreateEventController {
                 });
                 return res.status(HTTP.BAD_REQUEST).json(errorResponse);
             }
+            // PARSING 
+            const parsedEvent = Event.safeParse(req.body);
+            // IF PARSING FAILS
+            if (!parsedEvent.success) {
+                const errorResponse = new ErrorResponse({
+                    error: 'INVALID DATA FORMAT',
+                    code: HTTP.BAD_REQUEST
+                });
+                return res.status(HTTP.BAD_REQUEST).json(errorResponse);
+            }
+            const eventData: EventType = parsedEvent.data;
+
             // CALLING SERVICE TO CREATE EVENT
-            const [error, result] = await createEventService({
-                title,
-                description,
-                status,
-                EventSchedule
-            });
+            const [error, result] = await createEventService(eventData);
             // IF ERROR OCCURS WHEN CREATING EVENT
             if (error) {
                 const errorResponse = new ErrorResponse({
