@@ -18,10 +18,10 @@ export const eventScheduleSchema  = z.object({
 }).strict();
 
 export const eventSchema = z.object({ 
-    title: z.string().min(1,"TITLE IS REQUIRED"),
+    name: z.string().min(1,"EVENT NAME IS REQUIRED"),
     description: z.string().min(1,"DESCRIPTION IS REQUIRED"),
-    status: z.string().min(1,"STATUS IS REQUIRED"),
-    EventSchedule: z.array(eventScheduleSchema).nonempty("AT LEAST ONE SCHEDULE IS REQUIRED"),
+    status: z.enum(["UPCOMING", "ONGOING", "COMPLETED"]),
+    eventSchedule: z.array(eventScheduleSchema).nonempty("AT LEAST ONE SCHEDULE IS REQUIRED"),
 }).strict();
 
 // TYPE EXPORTS
