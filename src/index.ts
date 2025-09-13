@@ -1,10 +1,10 @@
 import "dotenv/config";
 import express from 'express';
 import type { NextFunction, Request, Response } from 'express';
-import prisma from "@/db";
 import cors from "cors";
 import morgan from "morgan"
 import cookieParser from "cookie-parser"
+import prisma from '@/db/prisma';
 import responseHandler from "./middleware/response.handler";
 import adminAuthRouter from "@/routers/admin.auth.router";
 

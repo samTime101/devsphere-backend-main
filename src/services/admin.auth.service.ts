@@ -1,7 +1,7 @@
-import { prismaSafe } from '../lib/prismaSafe.js';
+import { prismaSafe } from '../lib/prismaSafe.ts';
 import { hashPassword, comparePassword } from '../lib/password.js';
 import { signJwt } from '../lib/jwt.js';
-import prisma from '../db/index.js';
+import prisma from '../db/prisma.js';
 
 interface CreateAdminUserData {
     email: string;
@@ -72,8 +72,6 @@ export class AdminAuthService {
 
         return [null, { user, tokens }];
     }
-
-
     async findAdminByEmail(email: string): Promise<[string | null, AdminUserResponse | null]> {
         const [error, user] = await prismaSafe(
             prisma.user.findUnique({
