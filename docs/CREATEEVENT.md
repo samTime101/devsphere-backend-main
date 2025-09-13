@@ -8,18 +8,18 @@
 
 ```json
 {
-  "title": "ABCD",
+  "name": "ABCD",
   "description": "ALPHABET",
   "status": "UPCOMING",
-  "EventSchedule": [
+  "eventSchedule": [
     {
-      "startDate": "2025-09-15 1:10",
-      "endDate": "2025-09-15 4:10",
+      "startDate": "2025-09-15T10:00:00.000Z",
+      "endDate": "2025-09-15T12:00:00.000Z",
       "description": "TODAY IS FIRST DAY"
     },
     {
-      "startDate": "2025-09-16 1:10",
-      "endDate": "2025-09-16 4:10",
+      "startDate": "2025-09-16T12:00:00.000Z",
+      "endDate": "2025-09-16T14:00:00.000Z",
       "description": "TODAY IS SECOND DAY"
     }
   ]
@@ -33,18 +33,18 @@
 	"success": true,
 	"message": "EVENT CREATED SUCCESSFULLY",
 	"data": {
-		"title": "ABCD",
+		"name": "ABCD",
 		"description": "ALPHABET",
 		"status": "UPCOMING",
-		"EventSchedule": [
+		"eventSchedule": [
 			{
-				"startDate": "2025-09-15 1:10",
-				"endDate": "2025-09-15 4:10",
+				"startDate": "2025-09-15T10:00:00.000Z",
+				"endDate": "2025-09-15T12:00:00.000Z",
 				"description": "TODAY IS FIRST DAY"
 			},
 			{
-				"startDate": "2025-09-16 1:10",
-				"endDate": "2025-09-16 4:10",
+				"startDate": "2025-09-16T12:00:00.000Z",
+				"endDate": "2025-09-16T14:00:00.000Z",
 				"description": "TODAY IS SECOND DAY"
 			}
 		]
@@ -57,7 +57,7 @@
 
 ```json
 {
-  "title": "",
+  "name": "",
   "description": "ALPHABET",
   "status": "UPCOMING",
   "EventSchedule": [
