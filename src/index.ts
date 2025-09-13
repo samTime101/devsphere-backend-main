@@ -7,9 +7,9 @@ import cookieParser from "cookie-parser"
 import prisma from '@/db/prisma';
 import responseHandler from "./middleware/response.handler";
 import adminAuthRouter from "@/routers/admin.auth.router";
+import createEventRouter from "./routers/events/create.router";
 
 const app = express();
-// TEST
 const port = process.env.PORT || 3000;
 const NODE_ENV = process.env.NODE_ENV || 'development';
 const corsOptions = {
@@ -44,6 +44,7 @@ app.use((req: Request, _res: Response, next: NextFunction) => {
 });
 
 app.use('/api/admin/auth', adminAuthRouter);
+app.use('/api/events', createEventRouter);
 
 app.get('/health', (_req: Request, res: Response) => {
 	res.status(200).json({
