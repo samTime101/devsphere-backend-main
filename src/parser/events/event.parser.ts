@@ -11,13 +11,12 @@ import { eventSchema } from '@/utils/types/event';
 // IF FAILURE SEND [errorMessage, null]
 async function eventParser(data: Event): Promise<[string | null, Event | null]> {
     // PARSING 
-    const parsedEvent = eventSchema.safeParse(data);
-    // IF PARSING FAILS
-    if (!parsedEvent.success) {
-        return ['INVALID DATA FORMAT', null];
+    try{
+        const parsedData = eventSchema.parse(data);
+        return [null, parsedData];
+    } catch (error) {
+        return ['INVALID EVENT DATA GIVEN', null];
     }
-    const eventData: Event = parsedEvent.data;
-    return [null, eventData];
 }
 
 export default eventParser;
