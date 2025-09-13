@@ -9,7 +9,7 @@ import responseHandler from "./middleware/response.handler";
 import adminAuthRouter from "@/routers/admin.auth.router";
 
 const app = express();
-
+// TEST
 const port = process.env.PORT || 3000;
 const NODE_ENV = process.env.NODE_ENV || 'development';
 const corsOptions = {
