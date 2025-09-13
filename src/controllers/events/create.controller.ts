@@ -13,54 +13,40 @@ import { HTTP } from '@/utils/constants';
 // INTERFACE FOR REQUEST 
 
 // EVENT TYPE
-import type { Event as EventType } from '@/utils/types/event';
+import type { Event } from '@/utils/types/event';
 
-// ZOD SCHEMA IMPORT FOR PARSING AND VALIDATION
-import { Event } from '@/utils/types/event';
+// EVENT PARSER
+import eventParser from '@/parser/events/event.parser';
 
 class CreateEventController {
     // CONTROLLER METHOD FOR CREATING EVENT
     async createEvent(req: Request, res: Response) {
         try {
-            // POST REQUEST IS SENT VIA BODY WITH FILEDS FROM **Event** INTERFACE
-            const { title, description, status, EventSchedule }: Event = req.body;
-
-            // IF NOT ALL FIELDS ARE GIVEN
-            if (!title || !description || !status || !EventSchedule) {
+            // PARSING AND VALIDATION
+            const [parseError, eventData] : [string | null, Event | null] = await eventParser(req.body);
+            // IF PARSING ERROR OCCURS
+            if (parseError) {
                 const errorResponse = new ErrorResponse({
-                    error: 'ALL FIELDS ARE REQUIRED',
-                    // I HAVE NOT KEPT **detail** FIELD , DEFAULT MA NULL JANXA HAI 
+                    error: parseError,
                     code: HTTP.BAD_REQUEST
                 });
                 return res.status(HTTP.BAD_REQUEST).json(errorResponse);
             }
-            // PARSING 
-            const parsedEvent = Event.safeParse(req.body);
-            // IF PARSING FAILS
-            if (!parsedEvent.success) {
-                const errorResponse = new ErrorResponse({
-                    error: 'INVALID DATA FORMAT',
-                    code: HTTP.BAD_REQUEST
-                });
-                return res.status(HTTP.BAD_REQUEST).json(errorResponse);
-            }
-            const eventData: EventType = parsedEvent.data;
-
+            // AT THIS POINT **eventData** IS GUARANTEED TO BE NON-NULL DUE TO PARSER LOGIC
             // CALLING SERVICE TO CREATE EVENT
-            const [error, result] = await createEventService(eventData);
-            // IF ERROR OCCURS WHEN CREATING EVENT
-            if (error) {
+            const [serviceError, createdEvent]: [string | null, Event | null] = await createEventService(eventData as Event);
+            // IF SERVICE RETURNS ERROR
+            if (serviceError) {
                 const errorResponse = new ErrorResponse({
-                    error,
-                    code: HTTP.BAD_REQUEST
+                    error: serviceError,
+                    code: HTTP.INTERNAL
                 });
-                return res.status(HTTP.BAD_REQUEST).json(errorResponse);
+                return res.status(HTTP.INTERNAL).json(errorResponse);
             }
-            
-            // EVENT CREATE HUDA 
-            const successResponse = new SuccessResponse({
-                message: 'EVENT CREATION SUCCESS',
-                data: result,
+            // IF EVENT IS CREATED SUCCESSFULLY
+            const successResponse = new SuccessResponse<Event>({
+                data: createdEvent as Event,
+                message: 'EVENT CREATED SUCCESSFULLY',
                 code: HTTP.CREATED
             });
             return res.status(HTTP.CREATED).json(successResponse);
