@@ -2,7 +2,7 @@
 // SEP 14 2025
 // event.controller.ts
 
-import createEventController from "./events/create.controller";
+import createEventController from "@/controllers/events/create.controller";
 
 // REMOVEEVENT AND EDIT EVENT LEFT
 
