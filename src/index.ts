@@ -78,3 +78,7 @@ app.get('/api/status', async (_req: Request, res: Response) => {
 app.listen(port, () => {
 	console.log(`Server is running on port ${port}`);
 });
+
+
+// FOR TESTING
+export default app;
