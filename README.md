@@ -70,3 +70,16 @@ The API is running at [http://localhost:3000](http://localhost:3000).
 - `npm run db:studio`: Open database studio UI
  - `npm run db:generate`: Generate prisma client
 
+
+
+
+
+
+## Tests
+
+- `npx vitest src/tests/events/create.test.ts` : target a particular file
+- `npx vitest` : test all
+
+
+
+` you can also configure to use **npm** in **package.json**`
