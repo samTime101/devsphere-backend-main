@@ -13,75 +13,41 @@ export class AdminAuthController {
             const { email, password, memberId }: SignupRequest = req.body;
 
             if (!email || !password) {
-                const errorResponse = new ErrorResponse({
-                    error: 'Email and password are required',
-                    code: 400
-                });
-                return res.status(400).json(errorResponse);
+                return res.status(400).json(ErrorResponse(400, 'Email and password are required'));
             }
 
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (!emailRegex.test(email)) {
-                const errorResponse = new ErrorResponse({
-                    error: 'Please provide a valid email address',
-                    code: 400
-                });
-                return res.status(400).json(errorResponse);
+                return res.status(400).json(ErrorResponse(400, 'Please provide a valid email address'));
             }
 
             if (password.length < 8) {
-                const errorResponse = new ErrorResponse({
-                    error: 'Password must be at least 8 characters long',
-                    code: 400
-                });
-                return res.status(400).json(errorResponse);
+                return res.status(400).json(ErrorResponse(400, 'Password must be at least 8 characters long'));
             }
 
-            const [existingUserError, existingUser] = await adminAuthService.findAdminByEmail(email);
-            if (existingUser) {
-                const errorResponse = new ErrorResponse({
-                    error: 'Admin user with this email already exists',
-                    code: 409
-                });
-                return res.status(409).json(errorResponse);
+            const existingUserResult = await adminAuthService.findAdminByEmail(email);
+            if (existingUserResult.data) {
+                return res.status(409).json(ErrorResponse(409, 'Admin user with this email already exists'));
             }
 
-            const [error, result] = await adminAuthService.createAdminUser({
+            const result = await adminAuthService.createAdminUser({
                 email,
                 password,
                 memberId
             });
 
-            if (error) {
-                const errorResponse = new ErrorResponse({
-                    error,
-                    code: 400
-                });
-                return res.status(400).json(errorResponse);
+            if (!result.success) {
+                return res.status(400).json(ErrorResponse(400, result.error || 'Failed to create admin user'));
             }
 
-            if (!result) {
-                const errorResponse = new ErrorResponse({
-                    error: 'Failed to create admin user',
-                    code: 500
-                });
-                return res.status(500).json(errorResponse);
+            if (!result.data) {
+                return res.status(500).json(ErrorResponse(500, 'Failed to create admin user'));
             }
 
-            const response = new SuccessResponse({
-                data: result,
-                message: 'Admin account created successfully',
-                code: 201
-            });
-
-            res.status(201).json(response);
+            return res.status(201).json(SuccessResponse(201, 'Admin account created successfully', result.data));
         } catch (error) {
             console.error('Admin signup error:', error);
-            const errorResponse = new ErrorResponse({
-                error: 'Internal server error',
-                code: 500
-            });
-            res.status(500).json(errorResponse);
+            return res.status(500).json(ErrorResponse(500, 'Internal server error'));
         }
     }
 

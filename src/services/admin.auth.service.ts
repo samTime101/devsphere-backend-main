@@ -29,75 +29,94 @@ interface AuthTokens {
 }
 
 export class AdminAuthService {
-    async createAdminUser(userData: CreateAdminUserData): Promise<[string | null, { user: AdminUserResponse; tokens: AuthTokens } | null]> {
-        const { email, password, memberId } = userData;
+    async createAdminUser(userData: CreateAdminUserData): Promise<{ success: boolean; error?: string; data?: { user: AdminUserResponse; tokens: AuthTokens } }> {
+        try {
+            const { email, password, memberId } = userData;
 
-        const hashedPassword = await hashPassword(password);
+            const hashedPassword = await hashPassword(password);
 
-        const [error, user] = await prismaSafe(
-            prisma.user.create({
-                data: {
-                    email: email.toLowerCase().trim(),
-                    password: hashedPassword,
-                    role: 'ADMIN',
-                    memberId: memberId || null,
-                },
-                select: {
-                    id: true,
-                    email: true,
-                    role: true,
-                    memberId: true,
-                    createdAt: true,
-                    member: {
-                        select: {
-                            id: true,
-                            name: true,
-                            role: true,
-                            year: true,
+            const [error, user] = await prismaSafe(
+                prisma.user.create({
+                    data: {
+                        email: email.toLowerCase().trim(),
+                        password: hashedPassword,
+                        role: 'ADMIN',
+                        memberId: memberId || null,
+                    },
+                    select: {
+                        id: true,
+                        email: true,
+                        role: true,
+                        memberId: true,
+                        createdAt: true,
+                        member: {
+                            select: {
+                                id: true,
+                                name: true,
+                                role: true,
+                                year: true,
+                            }
                         }
                     }
-                }
-            })
-        );
+                })
+            );
 
-        if (error) {
-            return [error, null];
+            if (error) {
+                return { success: false, error };
+            }
+
+            if (!user) {
+                return { success: false, error: 'Failed to create user' };
+            }
+
+            const tokens = this.generateTokens(user.id, user.email);
+
+            return { success: true, data: { user, tokens } };
+        } catch (error) {
+            console.log(`Failed to create admin user, ${error}`);
+            return { success: false, error: error as string };
         }
-
-        if (!user) {
-            return ['Failed to create user', null];
-        }
-
-        const tokens = this.generateTokens(user.id, user.email);
-
-        return [null, { user, tokens }];
     }
-    async findAdminByEmail(email: string): Promise<[string | null, AdminUserResponse | null]> {
-        const [error, user] = await prismaSafe(
-            prisma.user.findUnique({
-                where: {
-                    email: email.toLowerCase().trim(),
-                    role: 'ADMIN'
-                },
-                select: {
-                    id: true,
-                    email: true,
-                    role: true,
-                    memberId: true,
-                    createdAt: true,
-                    member: {
-                        select: {
-                            id: true,
-                            name: true,
-                            role: true,
-                            year: true,
+
+    async findAdminByEmail(email: string): Promise<{ success: boolean; error?: string; data?: AdminUserResponse }> {
+        try {
+            const [error, user] = await prismaSafe(
+                prisma.user.findUnique({
+                    where: {
+                        email: email.toLowerCase().trim(),
+                        role: 'ADMIN'
+                    },
+                    select: {
+                        id: true,
+                        email: true,
+                        role: true,
+                        memberId: true,
+                        createdAt: true,
+                        member: {
+                            select: {
+                                id: true,
+                                name: true,
+                                role: true,
+                                year: true,
+                            }
                         }
                     }
-                }
-            })
-        );
+                })
+            );
 
-        return [error, user];
+            if (error) {
+                return { success: false, error };
+            }
+
+            if (!user) {
+                return { success: false, error: 'Admin user not found' };
+            }
+
+            return { success: true, data: user };
+        } catch (error) {
+            console.log(`Failed to find admin by email, ${error}`);
+            return { success: false, error: error as string };
+        }
     }
 
     private generateTokens(userId: string, email: string): AuthTokens {
