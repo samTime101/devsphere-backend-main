@@ -9,6 +9,8 @@ import responseHandler from "./middleware/response.handler";
 import adminAuthRouter from "@/routers/admin.auth.router";
 import eventRouter from "@/routers/event.router";
 import memberRouter from "./routers/member.routes";
+import { toNodeHandler } from "better-auth/node";
+import { auth } from "./lib/auth";
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -44,7 +46,7 @@ app.use((req: Request, _res: Response, next: NextFunction) => {
 	next();
 });
 
-app.use('/api/admin/auth', adminAuthRouter);
+app.all('/api/auth/{*any}', toNodeHandler(auth));
 app.use('/api/event', eventRouter);
 
 app.get('/health', (_req: Request, res: Response) => {

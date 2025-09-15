@@ -8,7 +8,13 @@ export const auth = betterAuth({
 	}),
 	trustedOrigins: [process.env.CORS_ORIGIN || ""],
 	emailAndPassword: {
-		enabled: true,
+		enabled: true
+	},
+	socialProviders: {
+		github: {
+			clientId: process.env.GITHUB_CLIENT_ID as string,
+			clientSecret: process.env.GITHUB_SECRET as string
+		}
 	},
 	advanced: {
 		defaultCookieAttributes: {
