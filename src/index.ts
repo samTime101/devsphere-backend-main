@@ -8,6 +8,7 @@ import prisma from '@/db/prisma';
 import responseHandler from "./middleware/response.handler";
 import adminAuthRouter from "@/routers/admin.auth.router";
 import eventRouter from "@/routers/event.router";
+import memberRouter from "./routers/member.routes";
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -73,6 +74,8 @@ app.get('/api/status', async (_req: Request, res: Response) => {
 		});
 	}
 });
+
+app.use('/api/members', memberRouter);
 
 
 app.listen(port, () => {
