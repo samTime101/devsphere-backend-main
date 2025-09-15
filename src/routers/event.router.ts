@@ -5,7 +5,7 @@
 // ROUTER IMPORT
 import { Router } from 'express';
 // CONTROLLER IMPORT
-import eventController from '@/controllers/event.controller';
+import { eventController } from '@/controllers/event.controller';
 
 // ROUTER INITIALIZATION
 const eventRouter = Router();
