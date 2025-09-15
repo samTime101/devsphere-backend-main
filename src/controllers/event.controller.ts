@@ -28,10 +28,10 @@ class EventController {
             const [parseError, eventData] : [string | null, Event | null] = await eventParser(req.body);
             // IF PARSING ERROR OCCURS
             if (parseError) {
-                const errorResponse = new ErrorResponse({
-                    error: parseError,
-                    code: HTTP.BAD_REQUEST
-                });
+                const errorResponse = ErrorResponse(
+                    HTTP.BAD_REQUEST,
+                    parseError
+                );
                 return res.status(HTTP.BAD_REQUEST).json(errorResponse);
             }
             // AT THIS POINT **eventData** IS GUARANTEED TO BE NON-NULL DUE TO PARSER LOGIC
@@ -39,25 +39,25 @@ class EventController {
             const [serviceError, createdEvent]: [string | null, Event | null] = await eventService.createEventService(eventData as Event);
             // IF SERVICE RETURNS ERROR
             if (serviceError) {
-                const errorResponse = new ErrorResponse({
-                    error: serviceError,
-                    code: HTTP.INTERNAL
-                });
+                const errorResponse = ErrorResponse(
+                    HTTP.INTERNAL,
+                    serviceError
+                );
                 return res.status(HTTP.INTERNAL).json(errorResponse);
             }
             // IF EVENT IS CREATED SUCCESSFULLY
-            const successResponse = new SuccessResponse<Event>({
-                data: createdEvent as Event,
-                message: 'EVENT CREATED SUCCESSFULLY',
-                code: HTTP.CREATED
-            });
+            const successResponse =  SuccessResponse<Event>(
+                HTTP.CREATED,
+                'EVENT CREATED SUCCESSFULLY',
+                createdEvent as Event,
+            );
             return res.status(HTTP.CREATED).json(successResponse);
             // IF ANY UNEXPECTED ERROR OCCURS
         } catch (err) {
-            const errorResponse = new ErrorResponse({
-                error: 'INTERNAL SERVICE ERROR',
-                code: HTTP.INTERNAL
-            });
+            const errorResponse = ErrorResponse(
+                HTTP.INTERNAL,
+                'INTERNAL SERVICE ERROR'
+            );
             return res.status(HTTP.INTERNAL).json(errorResponse);
         }
     }
@@ -65,34 +65,34 @@ class EventController {
         try {
             const eventId = req.params.id;
             if (!eventId) {
-                const errorResponse = new ErrorResponse({
-                    error: 'EVENT ID IS REQUIRED',
-                    code: HTTP.BAD_REQUEST
-                });
+                const errorResponse = ErrorResponse(
+                    HTTP.BAD_REQUEST,
+                    'EVENT ID IS REQUIRED'
+                );
                 return res.status(HTTP.BAD_REQUEST).json(errorResponse);
             }
             const [error, event]: [string | null, Event | null] = await eventService.getEventService(eventId);
 
             // EVENT NOT FOUND UTA SERVICE BATA AAUXA
             if (error) {
-                const errorResponse = new ErrorResponse({
+                const errorResponse =  ErrorResponse(
+                    HTTP.NOT_FOUND,
                     error,
-                    code: HTTP.NOT_FOUND
-                });
+                );
                 return res.status(errorResponse.code).json(errorResponse);
             }
 
-            const successResponse = new SuccessResponse<Event>({
-                message: 'EVENT FETCHED SUCCESSFULLY',
-                data: event as Event,
-                code: HTTP.OK
-            });
+            const successResponse =  SuccessResponse<Event>(
+                HTTP.OK,
+                'EVENT FETCHED SUCCESSFULLY',
+                event as Event
+            );
             return res.status(HTTP.OK).json(successResponse);
         } catch (error) {
-            const errorResponse = new ErrorResponse({
-                error: 'INTERNAL SERVER ERROR',
-                code: HTTP.INTERNAL
-            });
+            const errorResponse =  ErrorResponse(
+                HTTP.INTERNAL,
+                'INTERNAL SERVER ERROR',
+            );
             return res.status(HTTP.INTERNAL).json(errorResponse);
         }
     }
@@ -101,25 +101,25 @@ class EventController {
             const [error, events]: [string | null, Event[] | null] = await eventService.listEventService();
             // UTAI SERVICE BATAI ERROR AAUXA
             if (error) {
-                const errorResponse = new ErrorResponse({
+                const errorResponse =  ErrorResponse(
+                    HTTP.NOT_FOUND,
                     error,
-                    code: HTTP.NOT_FOUND
-                });
-                return res.status(errorResponse.code).json(errorResponse);
+                );
+                return res.status(HTTP.NOT_FOUND).json(errorResponse);
             }
             // LIST MA LINE
             // THE RESPONSE WILL BE AN ARRAY OF EVENTS
-            const successResponse = new SuccessResponse<Event[]>({
-                message: 'EVENTS FETCHED SUCCESSFULLY',
-                data: events as Event[],
-                code: HTTP.OK
-            });
+            const successResponse =  SuccessResponse<Event[]>(
+                HTTP.OK,
+                'EVENTS FETCHED SUCCESSFULLY',
+                events as Event[]
+            );
             return res.status(HTTP.OK).json(successResponse);
         } catch (error) {
-            const errorResponse = new ErrorResponse({
-                error: 'INTERNAL SERVER ERROR',
-                code: HTTP.INTERNAL
-            });
+            const errorResponse =  ErrorResponse(
+                HTTP.INTERNAL,
+                'INTERNAL SERVER ERROR',
+            );
             return res.status(HTTP.INTERNAL).json(errorResponse);
         }
     }
