@@ -21,7 +21,7 @@ class MemberServices{
         if(!memberResult) {
             return {success:false, error:'Failed to create member'}
         }
-            return {success : true, data:member}
+            return {success : true, data:memberResult}
          } catch (error) {
             console.log(`Failed to create Member, ${error}`)
             return {success : false, error: error}

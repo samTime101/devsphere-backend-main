@@ -1,20 +1,24 @@
-export default class ErrorResponse<D = any> {
-    public readonly success: false = false;
-    public readonly error: string;
-    public readonly details: D | null;
-    public readonly code: number;
+interface ErrorResponseData<D = any> {
+    success: false;
+    error: string;
+    details?: D;
+    code: number;
+}
 
-    constructor({
-                    error = 'Internal Server Error',
-                    details = null,
-                    code = 500,
-                }: {
-        error?: string;
-        details?: D | null;
-        code?: number;
-    } = {}) {
-        this.error = error;
-        this.details = details;
-        this.code = code;
+export default function ErrorResponse<D = any>(
+    code: number,
+    error: string,
+    details?: D
+): ErrorResponseData<D> {
+    const response: ErrorResponseData<D> = {
+        success: false,
+        error,
+        code,
+    };
+    
+    if (details !== undefined) {
+        response.details = details;
     }
+    
+    return response;
 }
