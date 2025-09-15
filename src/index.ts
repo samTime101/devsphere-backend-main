@@ -7,6 +7,7 @@ import cookieParser from "cookie-parser"
 import prisma from '@/db/prisma';
 import responseHandler from "./middleware/response.handler";
 import adminAuthRouter from "@/routers/admin.auth.router";
+import memberRouter from "./routers/member.routes";
 
 const app = express();
 
@@ -72,6 +73,8 @@ app.get('/api/status', async (_req: Request, res: Response) => {
 		});
 	}
 });
+
+app.use('/api/members', memberRouter);
 
 
 app.listen(port, () => {
