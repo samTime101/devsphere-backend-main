@@ -6,7 +6,6 @@ import morgan from "morgan"
 import cookieParser from "cookie-parser"
 import prisma from '@/db/prisma';
 import responseHandler from "./middleware/response.handler";
-import adminAuthRouter from "@/routers/admin.auth.router";
 import eventRouter from "@/routers/event.router";
 import memberRouter from "./routers/member.routes";
 import { toNodeHandler } from "better-auth/node";
