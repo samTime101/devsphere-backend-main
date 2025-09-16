@@ -8,7 +8,7 @@ class MemberController{
         try {
             const {name,role,year}  = req.body;
             if(!name || !role || !year){
-                return res.status(HTTP.BAD_REQUEST).json(ErrorResponse(HTTP.BAD_REQUEST, 'Name, Roll and Year are required'));
+                return res.status(HTTP.BAD_REQUEST).json(ErrorResponse(HTTP.BAD_REQUEST, 'Name, Role and Year are required'));
             }
             const result = await memberServices.createMember({name,role,year});
             if (!result.success) {
