@@ -43,13 +43,36 @@ class MemberServices{
             if(error) return {success : false, error:error};
             if(!result) return {success : false,error : 'Failed to remove member'}
             
-            return {success : true}
+            return {success : true, data : result}
             
         } catch (error) {
             console.log(`Failed to remove member, ${error}`)
             return {success: false, error : error}
         }
     }
+
+    async getMemberStatus(memberId : string){
+        try {
+            const[error,result] = await prismaSafe(
+                prisma.member.findUnique({
+                    where : {
+                        id : memberId
+                    },
+                    select : {
+                        status : true
+                    }
+                })
+            )
+            if(error) return {success : false, error:error};
+            if(!result) return {success : false,error : 'Failed to check status'}
+            
+            return{success : true,data : result}
+        } catch (error) {
+            console.log(`Failed to check status, ${error}`)
+            return {success: false, error : error} 
+        }
+    }
+
     async getMembers(){
         try {
             const [error, result] = await prismaSafe(
