@@ -1,12 +1,15 @@
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique @db.VarChar(255)
-  password  String
-  role      Role     @default(MODERATOR)
-  memberId  String?  @map("member_id")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-  member    member?  @relation(fields: [memberId], references: [id])
+  id            String    @id @default(uuid())
+  email         String    @unique @db.VarChar(255)
+  role          Role      @default(MODERATOR)
+  memberId      String?   @map("member_id")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+  emailVerified Boolean   @default(false)
+  image         String?
+  account       account[]
+  session       session[]
+  member        member?   @relation(fields: [memberId], references: [id])
 
   @@map("user")
 }
@@ -16,24 +19,21 @@ model Project {
   name                String
   githubLink          String?               @map("github_link")
   demoLink            String?               @map("demo_link")
-  tagId               String
   tech_stack          String[]
   description         String
   thumbnailUrl        String?               @map("thumbnail_url")
   createdAt           DateTime              @default(now()) @map("created_at")
   updatedAt           DateTime              @updatedAt @map("updated_at")
-  contributorId       String?
   ProjectContributors ProjectContributors[]
-  Contributor         Contributor?          @relation(fields: [contributorId], references: [id])
-  tag                 Tag                   @relation(fields: [tagId], references: [id])
+  project_tags        project_tags[]
 
   @@map("projects")
 }
 
 model Tag {
-  id      String    @id @default(uuid())
-  name    String    @unique
-  Project Project[]
+  id           String         @id @default(uuid())
+  name         String         @unique
+  project_tags project_tags[]
 
   @@map("tags")
 }
@@ -44,7 +44,6 @@ model Contributor {
   avatarUrl           String?               @map("avatar_url")
   githubUsername      String?               @map("github_username")
   ProjectContributors ProjectContributors[]
-  Project             Project[]
 
   @@map("contributors")
 }
