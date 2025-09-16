@@ -1,16 +1,64 @@
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique @db.VarChar(255)
-  password  String
-  role      Role     @default(MODERATOR)
-  memberId  String?  @map("member_id")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-  member    member?  @relation(fields: [memberId], references: [id])
+  id            String    @id @default(uuid())
+  email         String    @unique @db.VarChar(255)
+  role          Role      @default(MODERATOR)
+  emailVerified Boolean   @default(false)
+  image         String?
+  memberId      String?   @map("member_id")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+  member        member?   @relation(fields: [memberId], references: [id])
+  sessions      Session[]
+  accounts      Account[]
 
   @@map("user")
 }
 
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @default(now()) @updatedAt
+
+  @@map("verification")
+}
 model Project {
   id                  String                @id @default(uuid())
   name                String
