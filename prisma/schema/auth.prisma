@@ -1,4 +1,34 @@
-model account {
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique @db.VarChar(255)
+  role          Role      @default(MODERATOR)
+  memberId      String?   @map("member_id")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+  emailVerified Boolean   @default(false)
+  image         String?
+  accounts      Account[]
+  sessions      Session[]
+  member        member?   @relation(fields: [memberId], references: [id])
+
+  @@map("user")
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("session")
+}
+
+model Account {
   id                    String    @id
   accountId             String
   providerId            String
@@ -11,119 +41,108 @@ model account {
   scope                 String?
   password              String?
   createdAt             DateTime  @default(now())
-  updatedAt             DateTime
-  user                  user      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  updatedAt             DateTime  @updatedAt
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("account")
 }
 
-model contributors {
-  id                   String                 @id
-  name                 String
-  avatar_url           String?
-  github_username      String?
-  project_contributors project_contributors[]
-}
-
-model event_schedule {
-  id          String   @id
-  start_date  DateTime
-  end_date    DateTime
-  description String
-  event_id    String
-  events      events   @relation(fields: [event_id], references: [id], onDelete: Cascade)
-}
-
-model events {
-  id             String           @id
-  name           String
-  description    String
-  status         EventStatus      @default(UPCOMING)
-  event_schedule event_schedule[]
-}
-
-model members {
-  id     String       @id
-  name   String
-  role   String
-  year   DateTime
-  status MemberStatus
-  user   user[]
-}
-
-model project_contributors {
-  id             String       @id
-  project_id     String
-  contributor_id String
-  contributors   contributors @relation(fields: [contributor_id], references: [id], onDelete: Cascade)
-  projects       projects     @relation(fields: [project_id], references: [id], onDelete: Cascade)
-}
-
-model project_tags {
-  id         String   @id
-  project_id String
-  tag_id     String
-  projects   projects @relation(fields: [project_id], references: [id], onDelete: Cascade)
-  tags       tags     @relation(fields: [tag_id], references: [id], onDelete: Cascade)
-}
-
-model projects {
-  id                   String                 @id
-  name                 String
-  github_link          String?
-  demo_link            String?
-  tech_stack           String[]
-  description          String
-  thumbnail_url        String?
-  created_at           DateTime               @default(now())
-  updated_at           DateTime
-  project_contributors project_contributors[]
-  project_tags         project_tags[]
-}
-
-model session {
-  id        String   @id
-  expiresAt DateTime
-  token     String   @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime
-  ipAddress String?
-  userAgent String?
-  userId    String
-  user      user     @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
-model tags {
-  id           String         @id
-  name         String         @unique
-  project_tags project_tags[]
-}
-
-model user {
-  id            String    @id
-  email         String    @unique @db.VarChar(255)
-  role          Role      @default(MODERATOR)
-  member_id     String?
-  created_at    DateTime  @default(now())
-  updated_at    DateTime
-  emailVerified Boolean   @default(false)
-  image         String?
-  account       account[]
-  session       session[]
-  members       members?  @relation(fields: [member_id], references: [id])
-}
-
-model verification {
+model Verification {
   id         String   @id
   identifier String
   value      String
   expiresAt  DateTime
   createdAt  DateTime @default(now())
-  updatedAt  DateTime @default(now())
+  updatedAt  DateTime @default(now()) @updatedAt
+
+  @@map("verification")
 }
 
-enum EventStatus {
-  UPCOMING
-  ONGOING
-  COMPLETED
+
+model Project {
+  id                  String                @id @default(uuid())
+  name                String
+  githubLink          String?               @map("github_link")
+  demoLink            String?               @map("demo_link")
+  tech_stack          String[]
+  description         String
+  thumbnailUrl        String?               @map("thumbnail_url")
+  createdAt           DateTime              @default(now()) @map("created_at")
+  updatedAt           DateTime              @updatedAt @map("updated_at")
+  ProjectContributors ProjectContributors[]
+  ProjectTags         ProjectTags[]
+
+  @@map("projects")
+}
+
+model Tag {
+  id          String        @id @default(uuid())
+  name        String        @unique
+  ProjectTags ProjectTags[]
+
+  @@map("tags")
+}
+
+model ProjectTags {
+  id        String  @id @default(uuid())
+  projectId String  @map("project_id")
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  tagId     String  @map("tag_id")
+  tag       Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@map("project_tags")
+}
+
+model Contributor {
+  id                  String                @id @default(uuid())
+  name                String
+  avatarUrl           String?               @map("avatar_url")
+  githubUsername      String?               @map("github_username")
+  ProjectContributors ProjectContributors[]
+
+  @@map("contributors")
+}
+
+model ProjectContributors {
+  id            String      @id @default(uuid())
+  projectId     String      @map("project_id")
+  contributorId String      @map("contributor_id")
+  contributor   Contributor @relation(fields: [contributorId], references: [id], onDelete: Cascade)
+  project       Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@map("project_contributors")
+}
+
+model Events {
+  id            String          @id @default(uuid())
+  name          String
+  description   String
+  status        EventStatus     @default(UPCOMING)
+  EventSchedule EventSchedule[]
+
+  @@map("events")
+}
+
+model EventSchedule {
+  id          String   @id @default(uuid())
+  startDate   DateTime @map("start_date")
+  endDate     DateTime @map("end_date")
+  description String
+  eventId     String   @map("event_id")
+  event       Events   @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@map("event_schedule")
+}
+
+model member {
+  id     String       @id @default(uuid())
+  name   String
+  role   String
+  year   DateTime
+  status MemberStatus
+  User   User[]
+
+  @@map("members")
 }
 
 enum MemberStatus {
@@ -134,4 +153,10 @@ enum MemberStatus {
 enum Role {
   ADMIN
   MODERATOR
+}
+
+enum EventStatus {
+  UPCOMING
+  ONGOING
+  COMPLETED
 }
