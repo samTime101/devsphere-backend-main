@@ -28,28 +28,6 @@ class MemberServices{
         }
 
     }
-    // async removeMember(memberId: string){
-    //     try {
-    //         const [error,result] = await prismaSafe(
-    //             prisma.member.update({
-    //                 where : {
-    //                     id :memberId
-    //                 },
-    //                 data : {
-    //                     status : 'INACTIVE'
-    //                 }
-    //             })
-    //         )
-    //         if(error) return {success : false, error:error};
-    //         if(!result) return {success : false,error : 'Failed to remove member'}
-            
-    //         return {success : true, data : result}
-            
-    //     } catch (error) {
-    //         console.log(`Failed to remove member, ${error}`)
-    //         return {success: false, error : error}
-    //     }
-    // }
 
     async updateMember(memberId: string, updates: Partial<Member>){
         try {

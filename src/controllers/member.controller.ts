@@ -24,28 +24,6 @@ class MemberController{
         }
     }
     
-    // async removeMembers(req:Request,res:Response){
-    //     try {
-    //         const memberId = req.params.id
-    //         const result = await memberServices.getMemberStatus(memberId)
-    //         if(!result.success){
-    //             return res.status(HTTP.NOT_FOUND).json(ErrorResponse(HTTP.NOT_FOUND,typeof result.error === 'string'? result.error : 'Member not found'));
-    //         }
-    //         if(result.data?.status === 'INACTIVE'){
-    //             return res.status(HTTP.CONFLICT).json(ErrorResponse(HTTP.CONFLICT,'Member is already inactive'))
-    //         }
-
-    //         const memberResult = await memberServices.removeMember(memberId)
-    //         if(!memberResult.success){
-    //             return res.status(HTTP.INTERNAL).json(ErrorResponse(HTTP.INTERNAL, typeof memberResult.error === 'string' ? memberResult.error : 'Failed to remove member'));
-    //         }
-    //         return res.status(HTTP.OK).json(SuccessResponse(HTTP.OK,`Successfully removed ${memberResult.data?.name}`))
-
-    //     }
-    //     catch (error) {
-    //         return res.status(HTTP.INTERNAL).json(ErrorResponse(HTTP.INTERNAL, (error as Error).message || 'Internal Server Error'));
-    //     }
-    // }
     
     async getMembers(req : Request, res : Response){
         try {
