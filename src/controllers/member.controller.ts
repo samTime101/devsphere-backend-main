@@ -41,7 +41,7 @@ class MemberController{
 
         }
         catch (error) {
-            
+            return res.status(HTTP.INTERNAL).json(ErrorResponse(HTTP.INTERNAL, (error as Error).message || 'Internal Server Error'));
         }
     }
 }
