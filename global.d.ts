@@ -8,10 +8,7 @@ declare global {
             error: <D = any>(payload: ConstructorParameters<typeof ErrorResponse<D>>[0]) => void;
         }
         interface Request {
-            user?: {
-                id: string,
-                email: string
-            }
+            userId?: string
         }
     }
 }
