@@ -1,6 +1,8 @@
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import prisma from "../db/prisma";
+import { customSession } from "better-auth/plugins";
+import { userService } from "@/services/user.service";
 
 export const auth = betterAuth({
 	database: prismaAdapter(prisma, {
@@ -23,4 +25,12 @@ export const auth = betterAuth({
 			httpOnly: true,
 		},
 	},
+	plugins: [
+		customSession(async ({user}) => {
+			const roles = await userService.getUserRole(user.id);
+			const userWithRole = roles.data
+			return {userWithRole }; 
+		})
+	]
+	
 });
