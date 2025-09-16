@@ -13,7 +13,7 @@ import app from '@/index.js';
 describe('GET /api/event/id/:id', () => {
   it('FETCHES THE EVENT FOR A SPECIFIC ID', async () => {
     // DATABASE KO ID HO NOT RANDON ID, CHANGE GARDA DB BATA ID LIYA
-    const eventId = '1abbc5f4-ab69-43b4-819d-f4030fb232c2';
+    const eventId = 'ef680dc6-3445-47b0-9b37-a14a187baa38';
     const res = await request(app)
       .get(`/api/event/id/${eventId}`);
 
