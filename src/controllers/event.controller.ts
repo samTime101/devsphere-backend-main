@@ -36,12 +36,12 @@ class EventController {
             }
             // AT THIS POINT **eventData** IS GUARANTEED TO BE NON-NULL DUE TO PARSER LOGIC
             // CALLING SERVICE TO CREATE EVENT
-            const [serviceError, createdEvent]: [string | null, Event | null] = await eventService.createEventService(eventData as Event);
+            const result = await eventService.createEventService(eventData as Event);
             // IF SERVICE RETURNS ERROR
-            if (serviceError) {
+            if (!result.success) {
                 const errorResponse = ErrorResponse(
                     HTTP.INTERNAL,
-                    serviceError
+                    result.error as string
                 );
                 return res.status(HTTP.INTERNAL).json(errorResponse);
             }
@@ -49,7 +49,7 @@ class EventController {
             const successResponse =  SuccessResponse<Event>(
                 HTTP.CREATED,
                 'EVENT CREATED SUCCESSFULLY',
-                createdEvent as Event,
+                result.data as Event,
             );
             return res.status(HTTP.CREATED).json(successResponse);
             // IF ANY UNEXPECTED ERROR OCCURS
@@ -71,13 +71,13 @@ class EventController {
                 );
                 return res.status(HTTP.BAD_REQUEST).json(errorResponse);
             }
-            const [error, event]: [string | null, Event | null] = await eventService.getEventService(eventId);
+            const result = await eventService.getEventService(eventId);
 
             // EVENT NOT FOUND UTA SERVICE BATA AAUXA
-            if (error) {
+            if (!result.success) {
                 const errorResponse =  ErrorResponse(
                     HTTP.NOT_FOUND,
-                    error,
+                    result.error as string,
                 );
                 return res.status(errorResponse.code).json(errorResponse);
             }
@@ -85,7 +85,7 @@ class EventController {
             const successResponse =  SuccessResponse<Event>(
                 HTTP.OK,
                 'EVENT FETCHED SUCCESSFULLY',
-                event as Event
+                result.data as Event
             );
             return res.status(HTTP.OK).json(successResponse);
         } catch (error) {
@@ -98,12 +98,12 @@ class EventController {
     }
         async listEvent(req: Request, res: Response) {
         try {
-            const [error, events]: [string | null, Event[] | null] = await eventService.listEventService();
+            const result = await eventService.listEventService();
             // UTAI SERVICE BATAI ERROR AAUXA
-            if (error) {
+            if (!result.success) {
                 const errorResponse =  ErrorResponse(
                     HTTP.NOT_FOUND,
-                    error,
+                    result.error as string,
                 );
                 return res.status(HTTP.NOT_FOUND).json(errorResponse);
             }
@@ -112,7 +112,7 @@ class EventController {
             const successResponse =  SuccessResponse<Event[]>(
                 HTTP.OK,
                 'EVENTS FETCHED SUCCESSFULLY',
-                events as Event[]
+                result.data as Event[]
             );
             return res.status(HTTP.OK).json(successResponse);
         } catch (error) {
