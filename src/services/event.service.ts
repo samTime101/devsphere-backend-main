@@ -14,7 +14,7 @@ import type { Event } from '@/utils/types/event';
 
 
 class EventService {
-    async createEventService(eventData: Event): Promise<[string | null, Event | null]> {
+    async createEventService(eventData: Event): Promise<{success: boolean; error?: string; data?: Event}> {
     try {
         // SEND TO DB
         const [dbError, dbEvent] = await prismaSafe(
@@ -25,23 +25,32 @@ class EventService {
                     status: eventData.status,
                     EventSchedule: { create: eventData.eventSchedule },
                 },
+                include: { EventSchedule: true },
             })
         );
         // IF DB ERROR OCCURS
         if (dbError) {
-            return ['DATABASE ERROR OCCURRED', null];
+            return { success: false, error: dbError};
         }
+        if (!dbEvent) {
+            return { success: false, error: 'EVENT NOT CREATED' };
+        }
+        // FIXED: INSTEAD OF DUMMY RETURN , RETURN ACTUAL CREATED EVENT
+        // MAPPING DB EVENT TO EVENT TYPE
         const createdEvent: Event = {
-            ...eventData,
+            name: dbEvent.name,
+            description: dbEvent.description,
+            status: dbEvent.status,
+            eventSchedule: dbEvent.EventSchedule,
         };
         // ONLY SEND EVENT CREATION DATA !DONT SEND ERROR MESSAGE SEND NULL INSTEAD
-        return [null, createdEvent];
+        return { success: true, data: createdEvent };
     } catch (error) {
         // ONLY SEND ERROR MESSAGE AND NULL EVENT OBJECT
-        return ['FAILED TO CREATE EVENT', null];
+        return { success: false, error: error as string};
     }
 }
-async getEventService(eventId: string): Promise<[string | null, Event | null]> {
+async getEventService(eventId: string): Promise<{ success: boolean; error?: string; data?: Event }> {
     try {
         const [dbError, dbEvent] = await prismaSafe(
             prisma.events.findUnique({
@@ -51,10 +60,10 @@ async getEventService(eventId: string): Promise<[string | null, Event | null]> {
         );
         // IF DB ERROR OCCURS
         if (dbError) {
-            return ['DATABASE ERROR OCCURRED', null];
+            return { success: false, error: dbError };
         }
         if (!dbEvent) {
-            return ['EVENT NOT FOUND', null];
+            return { success: false, error: 'EVENT NOT FOUND' };
         }
         // MAPPING DB EVENT TO EVENT TYPE
         const fetchedEvent: Event = {
@@ -63,12 +72,12 @@ async getEventService(eventId: string): Promise<[string | null, Event | null]> {
             status: dbEvent.status,
             eventSchedule: dbEvent.EventSchedule,
         };
-        return [null, fetchedEvent];
+        return { success: true, data: fetchedEvent };
     } catch (error) {
-        return ['FAILED TO FETCH EVENT', null];
+        return { success: false, error: 'FAILED TO FETCH EVENT' };
     }
 }
-async listEventService(): Promise<[string | null, Event[] | null]> {
+async listEventService(): Promise<{ success: boolean; error?: string; data?: Event[] }> {
     try {
         const [dbError, dbEvents] = await prismaSafe(
             prisma.events.findMany({
@@ -77,10 +86,10 @@ async listEventService(): Promise<[string | null, Event[] | null]> {
         );
         // IF DB ERROR OCCURS
         if (dbError) {
-            return ['DATABASE ERROR OCCURRED', null];
+            return { success: false, error: 'DATABASE ERROR OCCURRED' };
         }
         if (!dbEvents) {
-            return ['EVENT NOT FOUND', null];
+            return { success: false, error: 'EVENT NOT FOUND' };
         }
         // MAPPING DB EVENT TO EVENT TYPE
         const fetchedEvents: Event[] = dbEvents.map(event => ({
@@ -91,9 +100,9 @@ async listEventService(): Promise<[string | null, Event[] | null]> {
             eventSchedule: event.EventSchedule,
         }));
 
-        return [null, fetchedEvents];
+        return { success: true, data: fetchedEvents };
     } catch (error) {
-        return ['FAILED TO FETCH EVENT', null];
+        return { success: false, error: 'FAILED TO FETCH EVENT' };
     }
 }
 }
