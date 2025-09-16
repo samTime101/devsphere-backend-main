@@ -6,7 +6,8 @@ import { Router } from 'express'
 
 const memberRouter = Router();
 memberRouter.post('/',isModerator, memberController.createMember )
+memberRouter.patch("/:id",isModerator,memberController.updateMember)
 
-memberRouter.delete('/:id',isModerator,memberController.removeMembers)
-
+// memberRouter.delete('/:id',isModerator,memberController.removeMembers)
+memberRouter.get('/',memberController.getMembers)
 export default memberRouter;
