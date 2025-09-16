@@ -58,6 +58,7 @@ model Verification {
   @@map("verification")
 }
 
+
 model Project {
   id                  String                @id @default(uuid())
   name                String
@@ -69,26 +70,27 @@ model Project {
   createdAt           DateTime              @default(now()) @map("created_at")
   updatedAt           DateTime              @updatedAt @map("updated_at")
   ProjectContributors ProjectContributors[]
-  project_tags        project_tags[]
+  ProjectTags         ProjectTags[]
 
   @@map("projects")
 }
 
-model project_tags {
-  id         String  @id
-  project_id String
-  tag_id     String
-  projects   Project @relation(fields: [project_id], references: [id], onDelete: Cascade)
-  tags       Tag     @relation(fields: [tag_id], references: [id], onDelete: Cascade)
-}
-
-
 model Tag {
-  id           String         @id @default(uuid())
-  name         String         @unique
-  project_tags project_tags[]
+  id          String        @id @default(uuid())
+  name        String        @unique
+  ProjectTags ProjectTags[]
 
   @@map("tags")
+}
+
+model ProjectTags {
+  id        String  @id @default(uuid())
+  projectId String  @map("project_id")
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  tagId     String  @map("tag_id")
+  tag       Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@map("project_tags")
 }
 
 model Contributor {
