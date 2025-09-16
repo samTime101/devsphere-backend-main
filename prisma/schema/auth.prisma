@@ -2,23 +2,22 @@ model User {
   id            String    @id @default(uuid())
   email         String    @unique @db.VarChar(255)
   role          Role      @default(MODERATOR)
-  emailVerified Boolean   @default(false)
-  image         String?
   memberId      String?   @map("member_id")
   createdAt     DateTime  @default(now()) @map("created_at")
   updatedAt     DateTime  @updatedAt @map("updated_at")
-  member        member?   @relation(fields: [memberId], references: [id])
-  sessions      Session[]
+  emailVerified Boolean   @default(false)
+  image         String?
   accounts      Account[]
+  sessions      Session[]
+  member        member?   @relation(fields: [memberId], references: [id])
 
   @@map("user")
 }
 
-
 model Session {
   id        String   @id
   expiresAt DateTime
-  token     String
+  token     String   @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   ipAddress String?
@@ -26,7 +25,6 @@ model Session {
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([token])
   @@map("session")
 }
 
@@ -35,7 +33,6 @@ model Account {
   accountId             String
   providerId            String
   userId                String
-  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   accessToken           String?
   refreshToken          String?
   idToken               String?
@@ -45,6 +42,7 @@ model Account {
   password              String?
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("account")
 }
@@ -59,29 +57,36 @@ model Verification {
 
   @@map("verification")
 }
+
 model Project {
   id                  String                @id @default(uuid())
   name                String
   githubLink          String?               @map("github_link")
   demoLink            String?               @map("demo_link")
-  tagId               String
   tech_stack          String[]
   description         String
   thumbnailUrl        String?               @map("thumbnail_url")
   createdAt           DateTime              @default(now()) @map("created_at")
   updatedAt           DateTime              @updatedAt @map("updated_at")
-  contributorId       String?
   ProjectContributors ProjectContributors[]
-  Contributor         Contributor?          @relation(fields: [contributorId], references: [id])
-  tag                 Tag                   @relation(fields: [tagId], references: [id])
+  project_tags        project_tags[]
 
   @@map("projects")
 }
 
+model project_tags {
+  id         String  @id
+  project_id String
+  tag_id     String
+  projects   Project @relation(fields: [project_id], references: [id], onDelete: Cascade)
+  tags       Tag     @relation(fields: [tag_id], references: [id], onDelete: Cascade)
+}
+
+
 model Tag {
-  id      String    @id @default(uuid())
-  name    String    @unique
-  Project Project[]
+  id           String         @id @default(uuid())
+  name         String         @unique
+  project_tags project_tags[]
 
   @@map("tags")
 }
@@ -92,7 +97,6 @@ model Contributor {
   avatarUrl           String?               @map("avatar_url")
   githubUsername      String?               @map("github_username")
   ProjectContributors ProjectContributors[]
-  Project             Project[]
 
   @@map("contributors")
 }
