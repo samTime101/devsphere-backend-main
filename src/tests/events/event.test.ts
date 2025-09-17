@@ -10,12 +10,12 @@ import app from '@/index.js';
 
 
 // GET EVENT FOR SPECIFIC ID TEST
-describe('GET /api/event/id/:id', () => {
+describe('GET /api/event/:id', () => {
   it('FETCHES THE EVENT FOR A SPECIFIC ID', async () => {
     // DATABASE KO ID HO NOT RANDON ID, CHANGE GARDA DB BATA ID LIYA
     const eventId = 'ef680dc6-3445-47b0-9b37-a14a187baa38';
     const res = await request(app)
-      .get(`/api/event/id/${eventId}`);
+      .get(`/api/event/${eventId}`);
 
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);
