@@ -5,8 +5,14 @@ import { Router } from 'express'
 
 
 const memberRouter = Router();
-memberRouter.post('/',isModerator, memberController.createMember )
-memberRouter.patch("/:id",isModerator,memberController.updateMember)
 
+//Public routes
 memberRouter.get('/',memberController.getMembers)
+
+//Authenticated routes
+memberRouter.use(isModerator)
+memberRouter.post('/', memberController.createMember )
+memberRouter.patch("/:id",memberController.updateMember)
+
+
 export default memberRouter;

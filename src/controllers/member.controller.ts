@@ -14,7 +14,7 @@ class MemberController{
             }
             const result = await memberServices.createMember({name,role,year});
             if (!result.success) {
-                return res.status(HTTP.BAD_REQUEST).json(ErrorResponse(HTTP.BAD_REQUEST, typeof result.error === 'string' ? result.error : 'Failed to create member'));
+                return res.status(HTTP.BAD_REQUEST).json(ErrorResponse(HTTP.BAD_REQUEST,result.error));
             }
             else {
                 return res.status(HTTP.CREATED).json(SuccessResponse(HTTP.CREATED, 'Member created successfully', result));
@@ -29,7 +29,7 @@ class MemberController{
         try {
             const result = await memberServices.getMembers()
             if(!result.success){
-                return res.status(HTTP.NOT_FOUND).json(ErrorResponse(HTTP.NOT_FOUND,typeof result.error === 'string'? result.error : 'Failed to fetch members'))
+                return res.status(HTTP.NOT_FOUND).json(ErrorResponse(HTTP.NOT_FOUND, result.error))
             }
 
             return res.status(HTTP.OK).json(SuccessResponse(HTTP.OK,'Fetched successfully',result.data))
@@ -48,7 +48,7 @@ class MemberController{
 
             const result = await memberServices.updateMember(memberId, updates)
             if (!result.success){
-                return res.status(HTTP.BAD_REQUEST).json({success:false,error:result.error})
+                return res.status(HTTP.BAD_REQUEST).json(ErrorResponse(HTTP.BAD_REQUEST, result.error))
             }
             return res.status(HTTP.OK).json({success:true,data:result.data})
         } catch (error) {
