@@ -3,7 +3,26 @@
 // INFO: SABAI TEST FILE MA UTA constants.ts BATA PANI IMPORT GARDA HUNTHYO
 //  TARA DEPENDENCY DHERAI FILE HARUMA NAHOS VANERA YAHI RAKHEKO
 
-import { describe, it, expect } from 'vitest';
+import type { Response, Request, NextFunction } from 'express';
+import { describe, it, expect,vi } from 'vitest';
+
+
+// WHEN U RUN THIS WITHOUT TAKING THE IMPORT ORIGINAL
+// IT GIVES ERROR BECAUSE OF THE ASYNC AWAIT IN THE ACTUAL MIDDLEWARE
+// SO TO BYPASS THAT WE HAVE TO USE importOriginal
+// PURAI DIRECT YO CODE NAI ERROR MA DEKO HO HAI **vitest** LE 
+
+vi.mock('@/middleware/auth.middleware', async (importOriginal) => {
+  const actual = await importOriginal()
+  return {
+    ...actual as object,
+    authMiddleware: async (req: Request, res: Response, next: NextFunction) => {
+      next();
+      return undefined;
+    },
+  }
+})
+
 import request from 'supertest';
 import app from '@/index.js';
 

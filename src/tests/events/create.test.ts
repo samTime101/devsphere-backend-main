@@ -5,19 +5,26 @@
 
 // PLEASE READ ALL THE COMMENTS BEFORE CHANGING OR RUNNING ANYTHING
 
+import type { Response, Request, NextFunction } from 'express';
+import { describe, it, expect,vi } from 'vitest';
 
-import { describe, it, expect } from 'vitest';
+
+// WHEN U RUN THIS WITHOUT TAKING THE IMPORT ORIGINAL
+// IT GIVES ERROR BECAUSE OF THE ASYNC AWAIT IN THE ACTUAL MIDDLEWARE
+// SO TO BYPASS THAT WE HAVE TO USE importOriginal
+// PURAI DIRECT YO CODE NAI ERROR MA DEKO HO HAI **vitest** LE 
+vi.mock('@/middleware/auth.middleware', async (importOriginal) => {
+  const actual = await importOriginal()
+  return {
+    ...actual as object,
+    authMiddleware: async (req: Request, res: Response, next: NextFunction) => {
+      next();
+      return undefined;
+    },
+  }
+})
 import request from 'supertest';
 import app from '@/index.js';
-
-
-
-// TO RUN A SPECIFIC TEST ONLY USE .only
-// TO SKIP A TEST USE .skip
-
-// EXAMPLE: describe.only(...) or describe.skip(...)
-
-// IF YOU DONT WANNA SKIP ANY TEST JUST USE describe(...)
 
 
 // SUCCESS EVENT CREATION TEST 
