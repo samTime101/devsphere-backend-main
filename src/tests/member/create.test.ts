@@ -4,24 +4,27 @@
 
 // PLEASE READ **tests/events/create.test.ts** FOR MORE INFO AND COMMENT ABOUT TEST FILES
 
-import { describe, it, expect, vi } from 'vitest';
+import type { Response, Request, NextFunction } from 'express';
+import { describe, it, expect,vi } from 'vitest';
+
+
+// WHEN U RUN THIS WITHOUT TAKING THE IMPORT ORIGINAL
+// IT GIVES ERROR BECAUSE OF THE ASYNC AWAIT IN THE ACTUAL MIDDLEWARE
+// SO TO BYPASS THAT WE HAVE TO USE importOriginal
+// PURAI DIRECT YO CODE NAI ERROR MA DEKO HO HAI **vitest** LE 
+
+vi.mock('@/middleware/auth.middleware', async (importOriginal) => {
+  const actual = await importOriginal()
+  return {
+    ...actual as object,
+    isModerator: async (req: Request, res: Response, next: NextFunction) => {
+      next();
+      return undefined;
+    },
+  }
+})
 import request from 'supertest';
 import app from '@/index.js';
-import type { Response, Request, NextFunction } from 'express';
-
-// MOCK THE isModerator MIDDLEWARE TO ALWAYS PASS
-// YO NAGARDA PANI HUNXA TARA HAREK TIME TOKEN DINU PARDO HEADER MA
-// KITA MEMBER CREATE GARNU AGADI SIGN IN GARERA TYA DEKHI TOKEN EXPORT GARNU PARO
-
-// BUT MOCKING IS EASIER FOR TESTING PURPOSES
-// DIRECTLY NEXT GARERA AUTHENTICATION NAI BYPASS GARXA
-
-vi.mock('@/middleware/auth.middleware', () => {
-  return {
-    isModerator: (req: Request, res: Response, next: NextFunction) => next(),
-  };
-});
-
 
 // SUCCESS MEMBER CREATION TEST 
 describe('POST /api/members', () => {
