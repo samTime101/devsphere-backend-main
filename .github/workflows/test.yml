@@ -26,4 +26,5 @@ jobs:
       run: pnpm prisma generate
     - run: pnpm vitest # RUN TESTS
     env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }} # DATABASE URL FROM GITHUB SECRETS
       CI: true # THE CI ENV VARIABLE IS NEEDED FOR VITEST TO RUN IN GITHUB ACTIONS
