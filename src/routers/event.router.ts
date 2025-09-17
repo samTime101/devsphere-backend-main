@@ -9,16 +9,19 @@
 import { Router } from 'express';
 // CONTROLLER IMPORT
 import { eventController } from '@/controllers/event.controller';
-
+import { authMiddleware } from '@/middleware/auth.middleware';
 
 // ROUTER INITIALIZATION
 const eventRouter = Router();
 
-// ROUTE DEFINITION
+// PUBLIC ROUTES
+eventRouter.get('/',eventController.listEvent);
+eventRouter.get('/:id',eventController.getEvent);
+
+// PROTECTED ROUTES
+eventRouter.use(authMiddleware);
 eventRouter.post('/', eventController.createEvent);
-eventRouter.get('/:id', eventController.getEvent);
-eventRouter.get('/', eventController.listEvent);
-eventRouter.patch('/:id', eventController.updateEvent);
+eventRouter.patch('/:id',eventController.updateEvent);
 
 // EXPORTING THE ROUTER
 export default eventRouter; 
