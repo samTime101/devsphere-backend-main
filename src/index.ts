@@ -82,3 +82,7 @@ app.use('/api/members', memberRouter);
 app.listen(port, () => {
 	console.log(`Server is running on port ${port}`);
 });
+
+
+// FOR TESTING
+export default app;

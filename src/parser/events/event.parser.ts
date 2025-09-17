@@ -7,16 +7,15 @@ import type { Event } from '@/utils/types/event';
 import { eventSchema } from '@/utils/types/event';
 
 
-// IF SUCCESS SEND {success: true, data: parsedData} 
-// IF FAILURE SEND {success: false, error: errorMessage}
-async function eventParser(data: Event): Promise<{ success: boolean; error?: string; data?: Event }> {
+// IF SUCCESS SEND [null, parsedData] 
+// IF FAILURE SEND [errorMessage, null]
+async function eventParser(data: Event): Promise<[string | null, Event | null]> {
     // PARSING 
     try{
         const parsedData = eventSchema.parse(data);
-        return { success: true, data: parsedData };
+        return [null, parsedData];
     } catch (error) {
-        console.log(`Failed to parse event data, ${error}`);
-        return { success: false, error: 'INVALID EVENT DATA GIVEN' };
+        return ['INVALID EVENT DATA GIVEN', null];
     }
 }
 
