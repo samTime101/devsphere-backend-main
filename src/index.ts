@@ -7,7 +7,7 @@ import cookieParser from "cookie-parser"
 import prisma from '@/db/prisma';
 import responseHandler from "./middleware/response.handler";
 import eventRouter from "@/routers/event.router";
-import memberRouter from "./routers/member.routes";
+import memberRouter from "./routers/member.router";
 import { toNodeHandler } from "better-auth/node";
 import { auth } from "./lib/auth";
 
