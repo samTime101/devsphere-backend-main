@@ -18,6 +18,7 @@ const eventRouter = Router();
 eventRouter.post('/create', eventController.createEvent);
 eventRouter.get('/id/:id', eventController.getEvent);
 eventRouter.get('/list', eventController.listEvent);
+eventRouter.post('/update/:id', eventController.updateEvent);
 
 // EXPORTING THE ROUTER
 export default eventRouter; 
