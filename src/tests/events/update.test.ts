@@ -10,10 +10,10 @@ import app from '@/index.js';
 let eventId:string = '98f87233-949b-4b7f-baf5-195e81a0e07b'
 
 // SUCCESS EVENT UPDATE TEST
-describe('POST /api/event/update/:d', () => {
+describe('PATCH /api/event/:id', () => {
   it('UPDATES AN EVENT', async () => {
     const res = await request(app)
-      .post(`/api/event/update/${eventId}`)
+      .patch(`/api/event/${eventId}`)
       .send({
         name: "NEW APPLE BANANA",
         description: "TEST",
@@ -34,10 +34,10 @@ describe('POST /api/event/update/:d', () => {
 });
 
 // FAILURE TEST
-describe('POST /api/event/update/:id', () => {
+describe('PATCH /api/event/:id', () => {
   it('FAILS TO UPDATE AN EVENT WITHOUT DESCRIPTION', async () => {
     const res = await request(app)
-      .post(`/api/event/update/${eventId}`)
+      .patch(`/api/event/${eventId}`)
       .send({
         // INSTEAD OF DESCRIPTION I PUT NAME
         name: "ALPHABET",

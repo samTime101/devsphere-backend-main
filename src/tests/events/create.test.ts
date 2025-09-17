@@ -21,10 +21,10 @@ import app from '@/index.js';
 
 
 // SUCCESS EVENT CREATION TEST 
-describe('POST /api/event/create', () => {
+describe('POST /api/event/', () => {
   it('CREATES AN EVENT', async () => {
     const res = await request(app)
-      .post('/api/event/create')
+      .post('/api/event/')
       .send({
         name: "NEW APPLE BANANA",
         description: "TEST",
@@ -45,10 +45,10 @@ describe('POST /api/event/create', () => {
 });
 
 // FAILURE TEST - MISSING NAME
-describe('POST /api/event/create', () => {
+describe('POST /api/event/', () => {
   it('FAILS TO CREATE AN EVENT WITHOUT A NAME', async () => {
     const res = await request(app)
-      .post('/api/event/create')
+      .post('/api/event/')
       .send({
         description: "ALPHABET",
         status: "UPCOMING",
