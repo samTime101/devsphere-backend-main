@@ -86,7 +86,7 @@ class MemberServices{
             const [error, result] = await prismaSafe(
                 prisma.member.findMany()
             )
-            if (error) return { success: false, error };
+            if (error) return { success: false, error : error };
             if (!result) return { success: false, error: "Failed to fetch members" };
             return { success: true, data: result };
         } catch (error) {

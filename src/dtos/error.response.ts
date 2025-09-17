@@ -1,13 +1,13 @@
 interface ErrorResponseData<D = any> {
     success: false;
-    error: string;
+    error: any;
     details?: D;
     code: number;
 }
 
 export default function ErrorResponse<D = any>(
     code: number,
-    error: string,
+    error: any,
     details?: D
 ): ErrorResponseData<D> {
     const response: ErrorResponseData<D> = {
