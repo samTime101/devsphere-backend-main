@@ -105,6 +105,50 @@ async listEventService(): Promise<{ success: boolean; error?: string; data?: Eve
         return { success: false, error: 'FAILED TO FETCH EVENT' };
     }
 }
+    async updateEventService(eventId: string, eventData: Partial<Event>): Promise<{ success: boolean; error?: string; data?: Event }> {
+        try{
+            // WHEN UPDATING EVENT WITH EVENT SCHEDULE, 
+            // FIRST DELETE ALL THE EXISTING SCHEDULES AND EVENTS AND THEN ADD CURRENT DATA
+            // YESO GARDA SAJILO HUNXA
+            const [dbError, dbEvent] = await prismaSafe(
+                prisma.events.update({
+                    where: { id: eventId },
+                    data: {
+                        name: eventData.name,
+                        description: eventData.description,
+                        status: eventData.status,
+                        EventSchedule: { 
+                            deleteMany: {} , // DELETE ALL EXISTING SCHEDULES
+                            create: eventData.eventSchedule // ADD NEW SCHEDULES
+                        }
+                    },
+                    include: { EventSchedule: true },
+                })
+            );
+            // IF DB ERROR OCCURS
+            if (dbError) {
+                return { success: false, error: dbError };
+            }
+            if (!dbEvent) {
+                return { success: false, error: 'EVENT NOT FOUND OR NOT UPDATED' };
+            }
+
+
+            // ALSO MALAI YO EVENT SCHEDULE MA eventId AAKO THIK LAGEKO XAINA
+            // THIS IS HAPPENING BECAUSE OF PRISMA SCHEMA 
+
+            // MAPPING DB EVENT TO EVENT TYPE
+            const updatedEvent: Event = {
+                name: dbEvent.name,
+                description: dbEvent.description,
+                status: dbEvent.status,
+                eventSchedule: dbEvent.EventSchedule,
+            };
+            return { success: true, data: updatedEvent };
+        } catch (error) {
+            return { success: false, error: 'FAILED TO UPDATE EVENT' };
+        }
+    }
 }
 
 export const eventService = new EventService();

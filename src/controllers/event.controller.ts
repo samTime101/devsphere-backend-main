@@ -123,6 +123,53 @@ class EventController {
             return res.status(HTTP.INTERNAL).json(errorResponse);
         }
     }
+    async updateEvent(req: Request, res: Response) {
+        try {
+            const eventId = req.params.id;
+            if (!eventId) {
+                const errorResponse = ErrorResponse(
+                    HTTP.BAD_REQUEST,
+                    'EVENT ID IS REQUIRED'
+                );
+                return res.status(HTTP.BAD_REQUEST).json(errorResponse);
+            }
+            // PARSING AND VALIDATION
+            const [parseError, eventData] : [string | null, Event | null] = await eventParser(req.body);
+            // IF PARSING ERROR OCCURS
+            if (parseError) {
+                const errorResponse = ErrorResponse(
+                    HTTP.BAD_REQUEST,
+                    parseError
+                );
+                return res.status(HTTP.BAD_REQUEST).json(errorResponse);
+            }
+            // CALLING SERVICE TO UPDATE EVENT
+            const result = await eventService.updateEventService(eventId, eventData as Event);
+            // IF SERVICE RETURNS ERROR
+            if (!result.success) {
+                const errorResponse = ErrorResponse(
+                    HTTP.INTERNAL,
+                    result.error as string
+                );
+                return res.status(HTTP.INTERNAL).json(errorResponse);
+            }
+            // IF EVENT IS UPDATED SUCCESSFULLY
+            const successResponse =  SuccessResponse<Event>(
+                HTTP.OK,
+                'EVENT UPDATED SUCCESSFULLY',
+                result.data as Event,
+            );
+            return res.status(HTTP.OK).json(successResponse);
+            // IF ANY UNEXPECTED ERROR OCCURS
+        } catch (err) {
+            const errorResponse = ErrorResponse(
+                HTTP.INTERNAL,
+                'INTERNAL SERVICE ERROR'
+            );
+            return res.status(HTTP.INTERNAL).json(errorResponse);
+        }
+    }
+
 }
 
 export const eventController = new EventController();
