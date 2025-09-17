@@ -15,10 +15,10 @@ import { eventController } from '@/controllers/event.controller';
 const eventRouter = Router();
 
 // ROUTE DEFINITION
-eventRouter.post('/create', eventController.createEvent);
-eventRouter.get('/id/:id', eventController.getEvent);
-eventRouter.get('/list', eventController.listEvent);
-eventRouter.post('/update/:id', eventController.updateEvent);
+eventRouter.post('/', eventController.createEvent);
+eventRouter.get('/:id', eventController.getEvent);
+eventRouter.get('/', eventController.listEvent);
+eventRouter.patch('/:id', eventController.updateEvent);
 
 // EXPORTING THE ROUTER
 export default eventRouter; 
