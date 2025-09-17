@@ -33,20 +33,6 @@ class MemberServices{
         try {
             let modifiedUpdates = { ...updates };
 
-            if (updates.status !== undefined) {
-                const currentMemberResponse = await this.getMemberStatus(memberId);
-
-                if (!currentMemberResponse.success || !currentMemberResponse.data) {
-                    return { success: false, error: currentMemberResponse.error || "Member not found" };
-                }
-
-                const currentMember = currentMemberResponse.data;
-
-                modifiedUpdates.status =
-                    currentMember.status === "ACTIVE" ? "INACTIVE" : "ACTIVE";
-            }
-
-
             const cleanData = Object.fromEntries(
                 Object.entries(modifiedUpdates).filter(([_, v]) => v !== undefined && v !== null)
             );
@@ -71,7 +57,7 @@ class MemberServices{
             return { success: false, error };
         }
     }
-
+    
 
     async getMemberStatus(memberId : string){
         try {
