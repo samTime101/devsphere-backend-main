@@ -1,5 +1,7 @@
 import { memberController } from '@/controllers/member.controller';
-import { isModerator } from '@/middleware/auth.middleware';
+import { createMemberSchema, updateMemberSchema } from '@/lib/zod/member.schema';
+import { authMiddleware, isModerator } from '@/middleware/auth.middleware';
+import { validateData } from '@/middleware/validation.middleware';
 import { router } from 'better-auth/api'
 import { Router } from 'express'
 
@@ -10,9 +12,10 @@ const memberRouter = Router();
 memberRouter.get('/',memberController.getMembers)
 
 //Authenticated routes
+memberRouter.use(authMiddleware)
 memberRouter.use(isModerator)
-memberRouter.post('/', memberController.createMember )
-memberRouter.patch("/:id",memberController.updateMember)
+memberRouter.post('/',validateData(createMemberSchema), memberController.createMember )
+memberRouter.patch("/:id",validateData(updateMemberSchema) ,memberController.updateMember)
 
 
 export default memberRouter;
