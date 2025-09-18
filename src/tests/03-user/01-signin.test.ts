@@ -23,7 +23,7 @@ describe('POST /api/auth/sign-in/email', () => {
     expect(res.status).toBe(200);
     // EXPECT TOKEN
     expect(res.body.token).toBeDefined();
-  },20000);// 20 SECOND TIMEOUT INCREASE GARA ERROR AYO VANE
+  });
 });
 
 // FAILURE TEST - FAKE PASS
