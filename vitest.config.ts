@@ -13,10 +13,10 @@ export default defineConfig({
   plugins: [tsconfigPaths()],
   test:{
     sequence:{
-      // TEST LAI PARALLEL MA RUN NAGAREKO,
-      //  BECAUSE DIFFERENT OPERATION EEUTAI ID MA PANI HUNA SAKXA
-      // THIS IS MORE SAFER AND GOES IN ORDER
-      concurrent: false 
+      // SEEMS LIKE WE DONT NEED THIS ANYMORE
+      // AS WE ARE NOW USING A SINGLE TEST FILE TO IMPORT ALL THE TEST FILES IN ORDER
+      // SO THIS IS NOT REQUIRED
+      // concurrent: false 
     },
     testTimeout: 30000, //  -> EACH TEST
   }
