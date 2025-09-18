@@ -1,7 +1,7 @@
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import prisma from "../db/prisma";
-import { customSession } from "better-auth/plugins";
+import { createAuthMiddleware, customSession } from "better-auth/plugins";
 import { userService } from "@/services/user.service";
 
 export const auth = betterAuth({
@@ -26,11 +26,25 @@ export const auth = betterAuth({
 		},
 	},
 	plugins: [
-		customSession(async ({user}) => {
+		customSession(async ({ user }) => {
 			const roles = await userService.getUserRole(user.id);
 			const userWithRole = roles.data
-			return {userWithRole }; 
+			return { userWithRole };
 		})
-	]
-	
+	],
+	hooks: {
+		after: createAuthMiddleware(async (ctx) => {
+			if (ctx.path === "/sign-up/email") {
+				const body = ctx.body;  
+				const newSession = ctx.context.newSession;
+
+				if (newSession && body.role) {
+					await prisma.user.update({
+						where: { id: newSession.user.id },
+						data: { role: body.role },
+					});
+				}
+			}
+		}),
+	},
 });
