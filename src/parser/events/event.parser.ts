@@ -1,10 +1,10 @@
 // SAMIP REGMI
 // SEP 13 2025
 // EVENT TYPE IMPORT
-import type { Event } from '@/utils/types/event';
+import type { Event } from '@/lib/zod/event.schema';
 
 // ZOD SCHEMA IMPORT FOR PARSING AND VALIDATION
-import { eventSchema } from '@/utils/types/event';
+import { eventSchema } from '@/lib/zod/event.schema';
 
 
 // IF SUCCESS SEND [null, parsedData] 
