@@ -78,11 +78,9 @@ The API is running at [http://localhost:3000](http://localhost:3000).
 ## Tests
 
 - `npx vitest src/tests/events/create.test.ts` : target a particular file
-- `npx vitest` : test all
+- `npm run test` : test all
 
 
-
-` you can also configure to use **npm** in **package.json**`
 
 
 
