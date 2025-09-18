@@ -8,6 +8,8 @@ import prisma from '@/db/prisma';
 import responseHandler from "./middleware/response.handler";
 import eventRouter from "@/routers/event.router";
 import memberRouter from "./routers/member.router";
+import userRouter from "./routers/user.router";
+import { blockSignup } from "./middleware/block-signup.middleware";
 import { toNodeHandler } from "better-auth/node";
 import { auth } from "./lib/auth";
 
@@ -45,8 +47,15 @@ app.use((req: Request, _res: Response, next: NextFunction) => {
 	next();
 });
 
+// Block public user registration
+app.use(blockSignup);
+
 app.all('/api/auth/{*any}', toNodeHandler(auth));
+
+
 app.use('/api/event', eventRouter);
+app.use('/api/members', memberRouter);
+app.use('/api/users', userRouter);
 
 app.get('/health', (_req: Request, res: Response) => {
 	res.status(200).json({
@@ -75,9 +84,6 @@ app.get('/api/status', async (_req: Request, res: Response) => {
 		});
 	}
 });
-
-app.use('/api/members', memberRouter);
-
 
 app.listen(port, () => {
 	console.log(`Server is running on port ${port}`);

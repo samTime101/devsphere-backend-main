@@ -34,6 +34,8 @@ export const isAdmin = async (req: Request, res: Response, next: NextFunction) =
             else {
                 return res.status(HTTP.UNAUTHORIZED).json(ErrorResponse(HTTP.UNAUTHORIZED, 'Unauthorized'))
             }
+        } else {
+            return res.status(HTTP.UNAUTHORIZED).json(ErrorResponse(HTTP.UNAUTHORIZED, 'Unauthorized'))
         }
     } catch (error) {
         console.log("Something went wrong on admin middleware: ", error)
