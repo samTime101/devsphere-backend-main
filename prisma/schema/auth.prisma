@@ -1,6 +1,7 @@
 model User {
   id            String    @id @default(uuid())
   email         String    @unique @db.VarChar(255)
+  name          String
   role          Role      @default(MODERATOR)
   memberId      String?   @map("member_id")
   createdAt     DateTime  @default(now()) @map("created_at")
@@ -58,7 +59,6 @@ model Verification {
   @@map("verification")
 }
 
-
 model Project {
   id                  String                @id @default(uuid())
   name                String
@@ -86,8 +86,8 @@ model Tag {
 model ProjectTags {
   id        String  @id @default(uuid())
   projectId String  @map("project_id")
-  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
   tagId     String  @map("tag_id")
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
   tag       Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
 
   @@map("project_tags")

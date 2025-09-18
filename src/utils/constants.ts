@@ -6,5 +6,6 @@ export const HTTP = {
     FORBIDDEN: 403,
     NOT_FOUND: 404,
     CONFLICT: 409,
+    UNPROCESSABLE_ENTITY: 422,
     INTERNAL: 500,
 } as const;
