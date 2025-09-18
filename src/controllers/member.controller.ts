@@ -4,7 +4,7 @@ import { HTTP } from "@/utils/constants";
 import { error } from "console";
 import type { Request, Response } from "express";
 import { success } from "zod";
-
+import { PaginationResponse } from "@/dtos"; 
 class MemberController{
     async createMember(req : Request, res : Response){
         try {
@@ -25,20 +25,53 @@ class MemberController{
     }
     
     
-    async getMembers(req : Request, res : Response){
-        try {
-            const result = await memberServices.getMembers()
-            if(!result.success){
-                return res.status(HTTP.NOT_FOUND).json(ErrorResponse(HTTP.NOT_FOUND, result.error))
-            }
+async getMembers(req: Request, res: Response) {
+    try {
+        const page = parseInt(req.query.page as string) || 1;
+        const limit = parseInt(req.query.limit as string) || 10;
+        const skip = (page - 1) * limit;
 
-            return res.status(HTTP.OK).json(SuccessResponse(HTTP.OK,'Fetched successfully',result.data))
+        const result = await memberServices.getMembers({ skip, limit });
 
-        } catch (error) {
-            console.log(error)
-            return res.status(HTTP.INTERNAL).json(ErrorResponse(HTTP.INTERNAL, (error as Error).message || 'Internal Server Error'));
+        if (!result.success) {
+            return res
+                .status(HTTP.NOT_FOUND)
+                .json(ErrorResponse(HTTP.NOT_FOUND, result.error));
         }
+
+        if (!result.data) {
+            return res
+                .status(HTTP.NOT_FOUND)
+                .json(ErrorResponse(HTTP.NOT_FOUND, "No member data found"));
+        }
+        const { members, total } = result.data;
+
+        return res
+            .status(HTTP.OK)
+            .json(
+                PaginationResponse(
+                    HTTP.OK,
+                    "Members fetched successfully",
+                    members,
+                    total,
+                    page,
+                    limit
+                )
+            );
+
+    } catch (error) {
+        console.log(`Get Members Controller Error: ${error}`);
+        return res
+            .status(HTTP.INTERNAL)
+            .json(
+                ErrorResponse(
+                    HTTP.INTERNAL,
+                    (error as Error).message || "Internal Server Error"
+                )
+            );
     }
+}
+
 
     async updateMember(req : Request, res : Response){
 

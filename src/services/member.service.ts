@@ -81,14 +81,22 @@ class MemberServices{
         }
     }
 
-    async getMembers(){
+    async getMembers({skip,limit}:{skip: number; limit: number}){
         try {
             const [error, result] = await prismaSafe(
-                prisma.member.findMany()
+                Promise.all([
+                    prisma.member.findMany({
+                        skip,
+                        take : limit,
+                        orderBy : { year : "desc"}
+                    }),
+                    prisma.member.count()
+                ])
             )
             if (error) return { success: false, error : error };
             if (!result) return { success: false, error: "Failed to fetch members" };
-            return { success: true, data: result };
+            const [members, total] = result;
+            return { success: true, data: {members, total} };
         } catch (error) {
             console.log(`Failed to fetch members, ${error}`)
             return {success : false, error : error}
