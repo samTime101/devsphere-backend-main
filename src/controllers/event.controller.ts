@@ -13,7 +13,7 @@ import { HTTP } from '@/utils/constants';
 // INTERFACE FOR REQUEST 
 
 // EVENT TYPE
-import type { Event } from '@/utils/types/event';
+import type { Event } from '@/lib/zod/event.schema';
 
 // EVENT PARSER
 import eventParser from '@/parser/events/event.parser';
@@ -168,6 +168,44 @@ class EventController {
             );
             return res.status(HTTP.INTERNAL).json(errorResponse);
         }
+    }
+    // DELETE EVENT 
+    // TAKES EVENT ID AS PARAM AND DELETES THE EVENT 
+    // EVENTSCHEDULES ARE DELETED USING CASCADE DELETE
+    async deleteEvent(req: Request, res: Response) {
+        try {
+            // PARAMS
+            const eventId = req.params.id;
+            if (!eventId) {
+                const errorResponse = ErrorResponse(
+                    HTTP.BAD_REQUEST,
+                    'EVENT ID IS REQUIRED'
+                );
+                return res.status(HTTP.BAD_REQUEST).json(errorResponse);
+            }
+            const result = await eventService.deleteEventService(eventId);
+            // EVENT NOT FOUND UTA SERVICE BATA AAUXA
+            if (!result.success) {
+                const errorResponse =  ErrorResponse(
+                    HTTP.NOT_FOUND,
+                    result.error as string,
+                );
+                return res.status(errorResponse.code).json(errorResponse);
+            }
+
+            const successResponse =  SuccessResponse<null>(
+                HTTP.OK,
+                'EVENT DELETED SUCCESSFULLY',
+                null
+            );
+            return res.status(HTTP.OK).json(successResponse);
+        } catch (error) {
+            const errorResponse =  ErrorResponse(
+                HTTP.INTERNAL,
+                'INTERNAL SERVER ERROR',
+            );
+            return res.status(HTTP.INTERNAL).json(errorResponse);
+        }   
     }
 
 }
