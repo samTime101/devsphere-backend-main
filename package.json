@@ -13,6 +13,7 @@
     "generate": "prisma generate",
     "migrate": "prisma migrate dev",
     "pull": "prisma db pull && prisma generate",
+    "seed": "tsx prisma/seed.ts",
     "test": "pnpm vitest ./src/tests/order.test.ts"
   },
   "dependencies": {
@@ -48,5 +49,8 @@
     "vite": "^7.1.5",
     "vite-tsconfig-paths": "^5.1.4",
     "vitest": "^3.2.4"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
   }
 }
