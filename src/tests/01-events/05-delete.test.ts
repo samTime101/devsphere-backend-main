@@ -12,7 +12,7 @@ vi.mock('@/middleware/auth.middleware', async (importOriginal) => {
   const actual = await importOriginal()
   return {
     ...actual as object,
-    isAdmin: async (req: Request, res: Response, next: NextFunction) => {
+    isModerator: async (req: Request, res: Response, next: NextFunction) => {
       next();
     },
     authMiddleware: async (req: Request, res: Response, next: NextFunction) => {

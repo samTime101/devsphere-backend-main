@@ -19,6 +19,9 @@ vi.mock('@/middleware/auth.middleware', async (importOriginal) => {
     authMiddleware: async (req: Request, res: Response, next: NextFunction) => {
       next();
     },
+    isModerator: async (req: Request, res: Response, next: NextFunction) => {
+      next();
+    },
   }
 })
 
