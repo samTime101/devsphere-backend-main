@@ -12,7 +12,7 @@
 import { Router } from 'express';
 // CONTROLLER IMPORT
 import { eventController } from '@/controllers/event.controller';
-import { authMiddleware, isAdmin } from '@/middleware/auth.middleware';
+import { authMiddleware, isModerator } from '@/middleware/auth.middleware';
 
 // ROUTER INITIALIZATION
 const eventRouter = Router();
@@ -22,12 +22,10 @@ eventRouter.get('/',eventController.listEvent);
 eventRouter.get('/:id',eventController.getEvent);
 
 // PROTECTED ROUTES
-eventRouter.use(authMiddleware);
+eventRouter.use(authMiddleware, isModerator);
 eventRouter.post('/', eventController.createEvent);
-eventRouter.patch('/:id',eventController.updateEvent);
-
-// ADMIN ROUTES
-eventRouter.delete('/:id', isAdmin, eventController.deleteEvent);
+eventRouter.patch('/:id', eventController.updateEvent);
+eventRouter.delete('/:id', eventController.deleteEvent);
 
 
 // EXPORTING THE ROUTER
