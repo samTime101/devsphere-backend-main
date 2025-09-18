@@ -26,7 +26,7 @@ jobs:
       run: pnpm prisma generate
     # PACKAGE JSON MA VAKO SCRIPT RUN GARNE 
     # BECAUSE IT IS RUNNING A SINGLE TEST FILE WITH ORDER 
-    - run: pnpm rn test 
+    - run: pnpm run test 
     env:
       DATABASE_URL: ${{ secrets.DATABASE_URL }} # DATABASE URL FROM GITHUB SECRETS
       CI: true # THE CI ENV VARIABLE IS NEEDED FOR VITEST TO RUN IN GITHUB ACTIONS
