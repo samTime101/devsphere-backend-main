@@ -5,7 +5,7 @@ import prisma from '@/db/prisma.js';
 
 
 // INTERFACE IMPORT
-import type { Event } from '@/utils/types/event';
+import type { Event, EventSchedule } from '@/lib/zod/event.schema';
 
 // RETURNS [error, createdEvent]
 
@@ -38,10 +38,18 @@ class EventService {
         // FIXED: INSTEAD OF DUMMY RETURN , RETURN ACTUAL CREATED EVENT
         // MAPPING DB EVENT TO EVENT TYPE
         const createdEvent: Event = {
+            id: dbEvent.id,
             name: dbEvent.name,
             description: dbEvent.description,
             status: dbEvent.status,
-            eventSchedule: dbEvent.EventSchedule,
+            // MANUAL MAPPING INSTEAD OF JUST SENDING THE DB OBJECT
+            eventSchedule: dbEvent.EventSchedule.map((schedule: EventSchedule) => ({
+                id: schedule.id,
+                // eventId: schedule.eventId, -> DB MA XA TARA EVENT ZOD SCHEMA MA XAINA
+                startDate: schedule.startDate,
+                endDate: schedule.endDate,
+                description: schedule.description,
+            })),
         };
         // ONLY SEND EVENT CREATION DATA !DONT SEND ERROR MESSAGE SEND NULL INSTEAD
         return { success: true, data: createdEvent };
@@ -70,7 +78,12 @@ async getEventService(eventId: string): Promise<{ success: boolean; error?: stri
             name: dbEvent.name,
             description: dbEvent.description,
             status: dbEvent.status,
-            eventSchedule: dbEvent.EventSchedule,
+            eventSchedule: dbEvent.EventSchedule.map((schedule: EventSchedule) => ({
+                id: schedule.id,
+                startDate: schedule.startDate,
+                endDate: schedule.endDate,
+                description: schedule.description,
+            })),
         };
         return { success: true, data: fetchedEvent };
     } catch (error) {
@@ -97,7 +110,12 @@ async listEventService(): Promise<{ success: boolean; error?: string; data?: Eve
             name: event.name,
             description: event.description,
             status: event.status,
-            eventSchedule: event.EventSchedule,
+            eventSchedule: event.EventSchedule.map((schedule: EventSchedule) => ({
+                id: schedule.id,
+                startDate: schedule.startDate,
+                endDate: schedule.endDate,
+                description: schedule.description,
+            })),
         }));
 
         return { success: true, data: fetchedEvents };
@@ -142,13 +160,38 @@ async listEventService(): Promise<{ success: boolean; error?: string; data?: Eve
                 name: dbEvent.name,
                 description: dbEvent.description,
                 status: dbEvent.status,
-                eventSchedule: dbEvent.EventSchedule,
+                eventSchedule: dbEvent.EventSchedule.map((schedule: EventSchedule) => ({
+                    id: schedule.id,
+                    startDate: schedule.startDate,
+                    endDate: schedule.endDate,
+                    description: schedule.description,
+                })),
             };
             return { success: true, data: updatedEvent };
         } catch (error) {
             return { success: false, error: 'FAILED TO UPDATE EVENT' };
         }
     }
+    // SEP 18 2025
+    // DELETE EVENT SERVICE
+    async deleteEventService(eventId: string): Promise<{ success: boolean; error?: string }> {
+        try {
+            const [dbError, dbEvent] = await prismaSafe(
+                prisma.events.delete({
+                    where: { id: eventId },
+                })
+            );
+            // IF DB ERROR OCCURS
+            if (dbError) {
+                return { success: false, error: dbError };
+            }
+            if (!dbEvent) {
+                return { success: false, error: 'EVENT NOT FOUND OR NOT DELETED' };
+            }
+            return { success: true };
+        } catch (error) {
+            return { success: false, error: 'FAILED TO DELETE EVENT' };
+        }
+    }
 }
-
 export const eventService = new EventService();

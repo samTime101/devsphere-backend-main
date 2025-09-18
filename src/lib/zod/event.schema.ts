@@ -14,13 +14,16 @@ import { z } from 'zod';
 // TRIED ADDING DIRECT DATE FILED **z.date()** BUT IT WAS GIVING ERROR SO I USED STRING AND CONVERTED TO DATE IN SERVICE LAYER
 // JSON MA DIRECT DATE OBJECT SEND GARNA PAIDAINA RAIXA
 export const eventScheduleSchema  = z.object({
+    // OPTIONAL ID
+    id: z.string().optional(),
     startDate: z.preprocess(arg => new Date(arg as string), z.date()),
     endDate: z.preprocess(arg => new Date(arg as string), z.date()),
     description: z.string().min(1,"DESCRIPTION IS REQUIRED"),
-    
 }).strict();
 
 export const eventSchema = z.object({ 
+    // OPTIONAL ID
+    id: z.string().optional(),
     name: z.string().min(1,"EVENT NAME IS REQUIRED"),
     description: z.string().min(1,"DESCRIPTION IS REQUIRED"),
     status: z.enum(["UPCOMING", "ONGOING", "COMPLETED"]),

@@ -11,4 +11,13 @@ import tsconfigPaths from 'vite-tsconfig-paths';
 
 export default defineConfig({
   plugins: [tsconfigPaths()],
+  test:{
+    sequence:{
+      // TEST LAI PARALLEL MA RUN NAGAREKO,
+      //  BECAUSE DIFFERENT OPERATION EEUTAI ID MA PANI HUNA SAKXA
+      // THIS IS MORE SAFER AND GOES IN ORDER
+      concurrent: false 
+    },
+    testTimeout: 30000, //  -> EACH TEST
+  }
 });
