@@ -12,7 +12,8 @@
     "studio": "prisma studio",
     "generate": "prisma generate",
     "migrate": "prisma migrate dev",
-    "pull": "prisma db pull && prisma generate"
+    "pull": "prisma db pull && prisma generate",
+    "test": "pnpm vitest ./src/tests/order.test.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.15.0",
