@@ -1,6 +1,5 @@
 import type { Request, Response } from "express";
 import prisma from "@/db/prisma";
-import { prismaSafe } from "@/lib/prismaSafe";
 import { tagServices } from "@/services/tag.service";
 import { ErrorResponse, SuccessResponse } from "@/dtos";
 import { HTTP } from "@/utils/constants";
@@ -28,7 +27,7 @@ class TagController {
   async createTag(req: Request, res: Response) {
     try {
       const { name } = req.body;
-      const createTagResult = await tagServices.createTag({ name });
+      const createTagResult = await tagServices.createTag(name);
 
       if (!createTagResult.success) {
         return res
