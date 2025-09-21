@@ -1,10 +1,9 @@
 import prisma from "@/db/prisma";
 import { prismaSafe } from "@/lib/prismaSafe";
-import type { Member } from "@/types/member.types";
-import { updateMemberSchema } from "@/lib/zod/member.schema";
+import type { UpdateMemberInput,CreateMemberInput } from "@/lib/zod/member.schema";
 
 class MemberServices{
-    async createMember(member: Member){
+    async createMember(member: CreateMemberInput ){
         try {
             const [memberError, memberResult] = await prismaSafe(
                 prisma.member.create({
@@ -29,22 +28,19 @@ class MemberServices{
 
     }
 
-    async updateMember(memberId: string, updates: Partial<Member>){
+    async updateMember(memberId: string, updates: UpdateMemberInput){
         try {
             let modifiedUpdates = { ...updates };
 
-            const cleanData = Object.fromEntries(
-                Object.entries(modifiedUpdates).filter(([_, v]) => v !== undefined && v !== null)
-            );
 
-            if (Object.keys(cleanData).length === 0) {
+            if (Object.keys(modifiedUpdates).length === 0) {
                 return { success: false, error: "No valid fields provided for update" };
             }
 
             const [error, result] = await prismaSafe(
             prisma.member.update({
                 where: { id: memberId },
-                data: cleanData,
+                data: modifiedUpdates,
             })
             );
 
@@ -100,6 +96,24 @@ class MemberServices{
         } catch (error) {
             console.log(`Failed to fetch members, ${error}`)
             return {success : false, error : error}
+        }
+    }
+
+    async getMember(memberId: string) {
+        try {
+            const [error, result] = await prismaSafe(
+                prisma.member.findUnique({
+                    where: { id: memberId },
+                })
+            );
+
+            if (error) return { success: false, error };
+            if (!result) return { success: false, error: "Member not found" };
+
+            return { success: true, data: result };
+        } catch (error) {
+            console.log(`Failed to fetch member, ${error}`);
+            return { success: false, error };
         }
     }
 }
