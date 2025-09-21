@@ -1,9 +1,9 @@
 import prisma from "@/db/prisma";
 import { prismaSafe } from "@/lib/prismaSafe";
-import type { Member } from "@/types/member.types";
+import type { UpdateMemberInput,CreateMemberInput } from "@/lib/zod/member.schema";
 
 class MemberServices{
-    async createMember(member: Member){
+    async createMember(member: CreateMemberInput ){
         try {
             const [memberError, memberResult] = await prismaSafe(
                 prisma.member.create({
@@ -28,7 +28,7 @@ class MemberServices{
 
     }
 
-    async updateMember(memberId: string, updates: Partial<Member>){
+    async updateMember(memberId: string, updates: UpdateMemberInput){
         try {
             let modifiedUpdates = { ...updates };
 
