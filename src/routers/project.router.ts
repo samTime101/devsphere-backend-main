@@ -10,9 +10,12 @@ import { Router } from "express";
 
 const projectRouter = Router();
 
+// Public route
+projectRouter.get("/", projectController.getAllProjects);
+
 projectRouter.use(authMiddleware);
 
-projectRouter.get("/", projectController.getAllProjects);
+// Private Routes
 projectRouter.post("/", validateBody(createProjectSchema), projectController.addProject);
 projectRouter.patch(
   "/:id",
