@@ -7,13 +7,14 @@ import { Router } from 'express'
 
 const memberRouter = Router();
 
+//public routes
+memberRouter.get('/',validateQuery(getMembersQuerySchema) ,memberController.getMembers)
 
 //Authenticated routes
 memberRouter.use(authMiddleware)
 memberRouter.use(isModerator)
 memberRouter.post('/',validateBody(createMemberSchema), memberController.createMember )
 memberRouter.patch("/:id",validateParams(memberParamsSchema) ,validateBody(updateMemberSchema) ,memberController.updateMember)
-memberRouter.get('/',validateQuery(getMembersQuerySchema) ,memberController.getMembers)
 memberRouter.get('/:id', validateParams(memberParamsSchema), memberController.getMember);
 
 

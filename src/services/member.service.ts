@@ -32,18 +32,15 @@ class MemberServices{
         try {
             let modifiedUpdates = { ...updates };
 
-            const cleanData = Object.fromEntries(
-                Object.entries(modifiedUpdates).filter(([_, v]) => v !== undefined && v !== null)
-            );
 
-            if (Object.keys(cleanData).length === 0) {
+            if (Object.keys(modifiedUpdates).length === 0) {
                 return { success: false, error: "No valid fields provided for update" };
             }
 
             const [error, result] = await prismaSafe(
             prisma.member.update({
                 where: { id: memberId },
-                data: cleanData,
+                data: modifiedUpdates,
             })
             );
 
