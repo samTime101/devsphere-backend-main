@@ -12,7 +12,6 @@ import userRouter from "./routers/user.router";
 import { blockSignup } from "./middleware/block-signup.middleware";
 import { toNodeHandler } from "better-auth/node";
 import { auth } from "./lib/auth";
-import projectRouter from "./routers/project.router";
 import tagRouter from "./routers/tag.router";
 
 const app = express();
@@ -87,7 +86,6 @@ app.get("/api/status", async (_req: Request, res: Response) => {
 
 app.use("/api/event", eventRouter);
 app.use("/api/members", memberRouter);
-app.use("/api/projects", projectRouter);
 app.use("/api/tags", tagRouter);
 
 app.listen(port, () => {

@@ -6,7 +6,7 @@ const tagRouter = Router();
 
 tagRouter.use(authMiddleware, isModerator);
 
-// Private Routess
+// Private Routes
 tagRouter.get("/", tagController.getAllTags);
 tagRouter.post("/", tagController.createTag);
 

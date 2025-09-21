@@ -2,9 +2,7 @@ import prisma from "@/db/prisma";
 import { prismaSafe } from "@/lib/prismaSafe";
 import { success } from "zod";
 
-interface CreateTagRequest {
-  name: string;
-}
+
 
 class TagServices {
   async getAllTags() {
@@ -26,13 +24,13 @@ class TagServices {
     }
   }
 
-  async createTag(data: CreateTagRequest) {
+  async createTag(name: string) {
     try {
       const [error, result] = await prismaSafe(
         prisma.tag.create({
           data: {
-            name: data.name,
-          },
+            name
+          }
         })
       );
       if (error) {
