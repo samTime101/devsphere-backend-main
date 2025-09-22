@@ -13,6 +13,8 @@ import { blockSignup } from "./middleware/block-signup.middleware";
 import { toNodeHandler } from "better-auth/node";
 import { auth } from "./lib/auth";
 import tagRouter from "./routers/tag.router";
+import contributorRouter from "./routers/contributor.router";
+import projectRouter from "./routers/project.router";
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -52,9 +54,8 @@ app.use(blockSignup);
 
 app.all("/api/auth/{*any}", toNodeHandler(auth));
 
-
-app.use('/api/members', memberRouter);
-app.use('/api/users', userRouter);
+app.use("/api/members", memberRouter);
+app.use("/api/users", userRouter);
 
 app.get("/health", (_req: Request, res: Response) => {
   res.status(200).json({
@@ -87,6 +88,8 @@ app.get("/api/status", async (_req: Request, res: Response) => {
 app.use("/api/event", eventRouter);
 app.use("/api/members", memberRouter);
 app.use("/api/tags", tagRouter);
+app.use("/api/contributors", contributorRouter);
+app.use("/api/projects", projectRouter);
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
