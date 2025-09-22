@@ -5,7 +5,7 @@ import { githubServices } from "./github.service";
 import type { GithubContributor } from "@/types/github.types";
 
 class ContributorServices {
-  async addContributorToProject(contributorId: string, projectId: string) {
+  async associateContributorToProject(contributorId: string, projectId: string) {
     try {
       const [error, contributorResult] = await prismaSafe(
         prisma.projectContributors.create({
@@ -72,28 +72,35 @@ class ContributorServices {
                 return;
               }
 
-              const newContributor = await prisma.contributor.create({
-                data: {
-                  name: newContributorData.data.name || "Unknown",
-                  avatarUrl: contributor.avatar_url,
-                  githubUsername: contributor.login,
-                },
-              });
+              const [newContributorError, newContributorResult] = await prismaSafe(
+                prisma.contributor.create({
+                  data: {
+                    name: newContributorData.data.name || "Unknown",
+                    avatarUrl: contributor.avatar_url,
+                    githubUsername: contributor.login,
+                  },
+                })
+              );
 
               // If new contributor is not created in database, skip for this one
-              if (!newContributor) {
+              if (newContributorError) {
+                errors.push(`Failed to create contributor: ${contributor.login}`);
+                return;
+              }
+
+              if (!newContributorResult) {
                 errors.push(`Failed to create contributor: ${contributor.login}`);
                 return;
               }
 
               // If new contributor is created in database, use its ID
-              contributorId = newContributor.id;
+              contributorId = newContributorResult.id;
             } else {
               // If contributor exists, use existing ID
               contributorId = existingContributor.data.id;
             }
 
-            const contributorToProjectResult = await this.addContributorToProject(
+            const contributorToProjectResult = await this.associateContributorToProject(
               contributorId,
               projectId
             );
