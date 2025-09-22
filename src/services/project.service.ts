@@ -85,32 +85,6 @@ class ProjectServices {
         return { success: false, error: "Failed to create project" };
       }
 
-      const projectId = projectResult.id;
-
-      // Create associations in the ProjectTags table
-      for (const tagId of project.tagIds || []) {
-        const [tagError, tagResult] = await prismaSafe(
-          prisma.projectTags.create({
-            data: { projectId, tagId },
-          })
-        );
-        if (tagError) {
-          console.log(`Error associating tag ${tagId} with project ${projectId}: ${tagError}`);
-        } else {
-          console.log(`Successfully associated tag ${tagId} with project ${projectId}`);
-        }
-      }
-
-      // If repoName is provided add contributors from that repo
-      if (repoName && projectResult?.id) {
-        const contributorResult = await contributorServices.addContributorsToProject(
-          repoName,
-          projectResult.id
-        );
-        if (!contributorResult.success) {
-          console.warn("Some contributors failed to process:", contributorResult.error);
-        }
-      }
       return { success: true, data: projectResult };
     } catch (error) {
       console.error("Error creating project:", error);
@@ -192,7 +166,7 @@ class ProjectServices {
 
       return { success: true, data: result };
     } catch (error) {
-      console.error("Error creating project:", error);
+      console.error("Error updating project:", error);
       return { success: false, error };
     }
   }

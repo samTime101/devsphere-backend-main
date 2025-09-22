@@ -4,6 +4,8 @@ import { HTTP } from "@/utils/constants.js";
 import { projectServices } from "@/services/project.service.js";
 import type { CreateProjectInput, UpdateProjectInput } from "@/lib/zod/project.schema.js";
 import { getRepoNameFromGithubUrl } from "@/utils/github.js";
+import { tagServices } from "@/services/tag.service.js";
+import { contributorServices } from "@/services/contributor.service.js";
 
 class ProjectController {
   async getAllProjects(req: Request, res: Response) {
@@ -62,6 +64,34 @@ class ProjectController {
             )
           );
       }
+
+      // If tagIds are provided, associate them with the project
+      const projectId = addProjectResult.data.id;
+
+      if (tagIds && tagIds.length > 0) {
+        const tagAssociationResult = await tagServices.associateTagToProject(projectId, tagIds);
+        if (!tagAssociationResult.success || !tagAssociationResult.data) {
+          console.warn(
+            "Some tags failed to associate with the project:",
+            tagAssociationResult.error
+          );
+          return res
+            .status(HTTP.BAD_REQUEST)
+            .json(ErrorResponse(HTTP.BAD_REQUEST, "Failed to associate tags"));
+        }
+      }
+
+      // If repoName is provided add contributors from that repo
+      if (repoName && addProjectResult.data.id) {
+        const contributorResult = await contributorServices.addContributorsToProject(
+          repoName,
+          addProjectResult.data.id
+        );
+        if (!contributorResult.success) {
+          console.warn("Some contributors failed to process:", contributorResult.error);
+        }
+      }
+
       return res
         .status(HTTP.OK)
         .json(SuccessResponse(HTTP.OK, "Project added successfully", addProjectResult.data));

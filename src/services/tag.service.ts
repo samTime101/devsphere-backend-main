@@ -65,6 +65,31 @@ class TagServices {
       return { success: false, error: error };
     }
   }
+
+  async associateTagToProject(projectId: string, tagIds: string[]) {
+    try {
+      const [tagError, tagResult] = await prismaSafe(
+        prisma.projectTags.createMany({
+          data: tagIds.map((tagId) => ({ projectId, tagId })),
+          skipDuplicates: true,
+        })
+      );
+
+      if (tagError) {
+        console.log(`Error associating tag ${tagIds} with project ${projectId}: ${tagError}`);
+        return { success: false, error: "Failed to associate tags with project" };
+      }
+      if (!tagResult) {
+        console.log(`No result when associating tag ${tagIds} with project ${projectId}`);
+        return { success: false, error: "Failed to associate tags with project" };
+      }
+
+      return { success: true, data: tagResult };
+    } catch (error) {
+      console.log(`Failed to associate tags with project ${projectId}, ${error}`);
+      return { success: false, error: "Internal server error" };
+    }
+  }
 }
 
 export const tagServices = new TagServices();
