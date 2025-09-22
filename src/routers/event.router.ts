@@ -13,19 +13,21 @@ import { Router } from 'express';
 // CONTROLLER IMPORT
 import { eventController } from '@/controllers/event.controller';
 import { authMiddleware, isModerator } from '@/middleware/auth.middleware';
+import {validateParams } from "@/middleware/validation.middleware";
+import { eventParamsSchema } from '@/lib/zod/event.schema';
 
 // ROUTER INITIALIZATION
 const eventRouter = Router();
 
 // PUBLIC ROUTES
 eventRouter.get('/',eventController.listEvent);
-eventRouter.get('/:id',eventController.getEvent);
+eventRouter.get('/:id',validateParams(eventParamsSchema),eventController.getEvent);
 
 // PROTECTED ROUTES
 eventRouter.use(authMiddleware, isModerator);
 eventRouter.post('/', eventController.createEvent);
-eventRouter.patch('/:id', eventController.updateEvent);
-eventRouter.delete('/:id', eventController.deleteEvent);
+eventRouter.patch('/:id',validateParams(eventParamsSchema), eventController.updateEvent);
+eventRouter.delete('/:id',validateParams(eventParamsSchema), eventController.deleteEvent);
 
 
 // EXPORTING THE ROUTER
