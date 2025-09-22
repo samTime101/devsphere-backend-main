@@ -8,7 +8,7 @@ class GithubServices {
       const token = process.env.GITHUB_TOKEN;
       if (!token) {
         console.log("No github token found");
-        return;
+        return { success: false, error: "No GitHub token found" };
       }
       const repositoryResponse = await axios.get(
         `https://api.github.com/repos/BIC-Devsphere/${repoName}/contributors`,
