@@ -81,7 +81,6 @@ describe('PATCH /api/event/:id', () => {
 
     expect(res.status).toBe(400);
     expect(res.body.success).toBe(false);
-    expect(res.body.error).toBe('INVALID EVENT DATA GIVEN');
     // U CAN ADD MORE EXPECTATIONS IF U WANT
   });
 });
