@@ -1,55 +1,91 @@
 import prisma from "@/db/prisma";
 import { prismaSafe } from "@/lib/prismaSafe";
 import type { UpdateMemberInput,CreateMemberInput } from "@/lib/zod/member.schema";
+import { uploadImageToCloudinary } from "@/utils/cloudinary.uploader";
+import { profile } from "console";
 
 class MemberServices{
-    async createMember(member: CreateMemberInput ){
+    async createMember(member: CreateMemberInput , imageFile : Express.Multer.File | undefined){
         try {
+            let profileImageUrl : string | null = null;
+            
+            if(imageFile){
+                try {
+                    const uploadResult = await uploadImageToCloudinary(imageFile.path,{
+                        folder : "profile_images",
+                    })
+                    if(!uploadResult.success){
+                        console.log(`Error while uploading image: ${uploadResult.error}`)
+                    }
+                    profileImageUrl = uploadResult.url ?? null
+                    
+                } catch (error) {
+                    console.log(`Cloudinary upload error: ${error}`)
+                }
+            }
+
             const [memberError, memberResult] = await prismaSafe(
                 prisma.member.create({
                     data: {
                         status : 'ACTIVE',
-                        ...member
+                        ...member,
+                        avatarUrl : profileImageUrl,
                     }
 
                 })
             )
-            if(memberError) {
-                return {success:false, error:memberError};
-            }
+        if(memberError) {
+            return {success:false, error:memberError};
+        }
         if(!memberResult) {
             return {success:false, error:'Failed to create member'}
         }
             return {success : true, data:memberResult}
-         } catch (error) {
+        } catch (error) {
             console.log(`Failed to create Member, ${error}`)
             return {success : false, error: error}
         }
 
     }
 
-    async updateMember(memberId: string, updates: UpdateMemberInput){
+    async updateMember(memberId: string, updates: UpdateMemberInput, imageFile : Express.Multer.File | undefined){
         try {
-            let modifiedUpdates = { ...updates };
+
+            let profileImageUrl : string | null = null;
+
+            if(imageFile){
+                try {
+                    const uploadResult = await uploadImageToCloudinary(imageFile.path,{
+                        folder : "profile_images",
+                    })
+                    if(!uploadResult.success){
+                        console.log(`Error while uploading image: ${uploadResult.error}`)
+                    }
+                    profileImageUrl = uploadResult.url ?? null
+                    
+                } catch (error) {
+                    console.log(`Cloudinary upload error: ${error}`)
+                }
+            }
 
 
-            if (Object.keys(modifiedUpdates).length === 0) {
-                return { success: false, error: "No valid fields provided for update" };
+            if (Object.keys(updates).length === 0 && !profileImageUrl) {
+                return { success: false, error: "No valid fields provided for updates" };
             }
 
             const [error, result] = await prismaSafe(
             prisma.member.update({
                 where: { id: memberId },
-                data: modifiedUpdates,
+                data: {...updates, avatarUrl : profileImageUrl}
             })
             );
 
             if (error) return { success: false, error };
-            if (!result) return { success: false, error: "Failed to update member" };
+            if (!result) return { success: false, error: "Failed to updates member" };
 
             return { success: true, data: result };
         } catch (error) {
-            console.log(`Failed to update member, ${error}`);
+            console.log(`Failed to updates member, ${error}`);
             return { success: false, error };
         }
     }
