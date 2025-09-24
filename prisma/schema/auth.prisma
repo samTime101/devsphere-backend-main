@@ -1,13 +1,13 @@
 model User {
   id            String    @id @default(uuid())
   email         String    @unique @db.VarChar(255)
-  name          String
   role          Role      @default(MODERATOR)
   memberId      String?   @map("member_id")
   createdAt     DateTime  @default(now()) @map("created_at")
   updatedAt     DateTime  @updatedAt @map("updated_at")
   emailVerified Boolean   @default(false)
   image         String?
+  name          String
   accounts      Account[]
   sessions      Session[]
   member        member?   @relation(fields: [memberId], references: [id])
@@ -135,12 +135,13 @@ model EventSchedule {
 }
 
 model member {
-  id     String       @id @default(uuid())
-  name   String
-  role   String
-  year   DateTime
-  status MemberStatus
-  User   User[]
+  id        String       @id @default(uuid())
+  name      String
+  avatarUrl String?      @map("avatar_url")
+  role      String
+  year      DateTime
+  status    MemberStatus
+  User      User[]
 
   @@map("members")
 }

@@ -1,4 +1,5 @@
 import { memberController } from '@/controllers/member.controller';
+import upload from '@/lib/multer';
 import { createMemberSchema, getMembersQuerySchema, memberParamsSchema, updateMemberSchema } from '@/lib/zod/member.schema';
 import { authMiddleware, isModerator } from '@/middleware/auth.middleware';
 import { validateBody, validateParams, validateQuery } from '@/middleware/validation.middleware';
@@ -11,10 +12,9 @@ const memberRouter = Router();
 memberRouter.get('/',validateQuery(getMembersQuerySchema) ,memberController.getMembers)
 
 //Authenticated routes
-memberRouter.use(authMiddleware)
-memberRouter.use(isModerator)
-memberRouter.post('/',validateBody(createMemberSchema), memberController.createMember )
-memberRouter.patch("/:id",validateParams(memberParamsSchema) ,validateBody(updateMemberSchema) ,memberController.updateMember)
+memberRouter.use(authMiddleware,isModerator)
+memberRouter.post('/',upload.single("avatar") ,validateBody(createMemberSchema), memberController.createMember )
+memberRouter.patch("/:id",upload.single("avatar"), validateParams(memberParamsSchema) ,validateBody(updateMemberSchema) ,memberController.updateMember)
 memberRouter.get('/:id', validateParams(memberParamsSchema), memberController.getMember);
 
 
