@@ -1,0 +1,32 @@
+# https://docs.github.com/en/actions/tutorials/build-and-test-code/nodejs
+# SAMIP REGMI
+# SEP 17 2025
+
+# SURUMA CHAI GITHUB DOCS BATA LEKHEKO THEYE
+# LOCALLY DOCKER RA ACT SANGA CHALO TARA GITHUB MA CHAI PROBLEM AAYO
+# SO I REMOVED SOME THINGS LIKE CACHING AND STUFF
+name: Tests for endpoints using vitest
+
+# CURRENTLY IT RUNS ON EVERY PUSH ON ANY BRANCH
+# HAMILE **develop** KO LAGI MATRA BANAUDA PANI HUNXA
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v5 # CHECKOUT THE REPO -> FROM DOCS
+    - uses: actions/setup-node@v4 # SETUP NODE -> FROM DOCS
+      with:
+        node-version: '22.17.0' #MY NODE VERSION
+    - name: Install pnpm # INSTALL PNPM 
+      run: npm install -g pnpm@10.16.1 #YO CHAI MERO MA VAKO VERSION HO HAI LOL
+    - run: pnpm install
+    - name: prisma ko client generate # GENERATE PRISMA CLIENT
+      run: pnpm prisma generate
+    # PACKAGE JSON MA VAKO SCRIPT RUN GARNE 
+    # BECAUSE IT IS RUNNING A SINGLE TEST FILE WITH ORDER 
+    - run: pnpm run test 
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }} # DATABASE URL FROM GITHUB SECRETS
+      CI: true # THE CI ENV VARIABLE IS NEEDED FOR VITEST TO RUN IN GITHUB ACTIONS

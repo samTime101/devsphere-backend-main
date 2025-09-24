@@ -70,3 +70,26 @@ The API is running at [http://localhost:3000](http://localhost:3000).
 - `npm run db:studio`: Open database studio UI
  - `npm run db:generate`: Generate prisma client
 
+
+
+
+
+
+## Tests
+
+- `npx vitest src/tests/events/create.test.ts` : target a particular file
+- `npm run test` : test all
+
+
+
+
+
+
+## Workflow test
+
+**Make sure u have `docker` and `act` installed**
+
+- mock the push using `act push` **ONLY USE THIS COMMAND FOR FIRST TIME**
+- now check if the images are installed on docker `docker images`
+- now everytime u call use `act push --reuse` so instead of creating new image it uses the existing image
+  

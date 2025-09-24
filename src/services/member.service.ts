@@ -1,10 +1,9 @@
 import prisma from "@/db/prisma";
 import { prismaSafe } from "@/lib/prismaSafe";
-import type { Member } from "@/types/member.types";
-import { success } from "zod";
+import type { UpdateMemberInput,CreateMemberInput } from "@/lib/zod/member.schema";
 
 class MemberServices{
-    async createMember(member: Member){
+    async createMember(member: CreateMemberInput ){
         try {
             const [memberError, memberResult] = await prismaSafe(
                 prisma.member.create({
@@ -28,28 +27,33 @@ class MemberServices{
         }
 
     }
-    async removeMember(memberId: string){
+
+    async updateMember(memberId: string, updates: UpdateMemberInput){
         try {
-            const [error,result] = await prismaSafe(
-                prisma.member.update({
-                    where : {
-                        id :memberId
-                    },
-                    data : {
-                        status : 'INACTIVE'
-                    }
-                })
-            )
-            if(error) return {success : false, error:error};
-            if(!result) return {success : false,error : 'Failed to remove member'}
-            
-            return {success : true, data : result}
-            
+            let modifiedUpdates = { ...updates };
+
+
+            if (Object.keys(modifiedUpdates).length === 0) {
+                return { success: false, error: "No valid fields provided for update" };
+            }
+
+            const [error, result] = await prismaSafe(
+            prisma.member.update({
+                where: { id: memberId },
+                data: modifiedUpdates,
+            })
+            );
+
+            if (error) return { success: false, error };
+            if (!result) return { success: false, error: "Failed to update member" };
+
+            return { success: true, data: result };
         } catch (error) {
-            console.log(`Failed to remove member, ${error}`)
-            return {success: false, error : error}
+            console.log(`Failed to update member, ${error}`);
+            return { success: false, error };
         }
     }
+    
 
     async getMemberStatus(memberId : string){
         try {
@@ -73,17 +77,43 @@ class MemberServices{
         }
     }
 
-    async getMembers(){
+    async getMembers({skip,limit}:{skip: number; limit: number}){
         try {
             const [error, result] = await prismaSafe(
-                prisma.member.findMany()
+                Promise.all([
+                    prisma.member.findMany({
+                        skip,
+                        take : limit,
+                        orderBy : { year : "desc"}
+                    }),
+                    prisma.member.count()
+                ])
             )
-            if (error) return { success: false, error };
+            if (error) return { success: false, error : error };
             if (!result) return { success: false, error: "Failed to fetch members" };
+            const [members, total] = result;
+            return { success: true, data: {members, total} };
+        } catch (error) {
+            console.log(`Failed to fetch members, ${error}`)
+            return {success : false, error : error}
+        }
+    }
+
+    async getMember(memberId: string) {
+        try {
+            const [error, result] = await prismaSafe(
+                prisma.member.findUnique({
+                    where: { id: memberId },
+                })
+            );
+
+            if (error) return { success: false, error };
+            if (!result) return { success: false, error: "Member not found" };
+
             return { success: true, data: result };
         } catch (error) {
-            console.log(`Failed to fecth members, ${error}`)
-            return {success : false, error : error}
+            console.log(`Failed to fetch member, ${error}`);
+            return { success: false, error };
         }
     }
 }

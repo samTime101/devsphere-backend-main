@@ -5,12 +5,34 @@ import { customSession } from "better-auth/plugins";
 import { userService } from "@/services/user.service";
 
 export const auth = betterAuth({
+	user: {
+		modelName: "user",
+		additionalFields: {
+			name: {
+				type: "string",
+				required: false,
+				input: false,
+			},
+			role: {
+				type: "string",
+				required: false,
+				defaultValue: "MODERATOR",
+				input: true,
+			},
+			memberId: {
+				type: "string",
+				required: false,
+				input: true, 
+			},
+		},
+	},
 	database: prismaAdapter(prisma, {
 		provider: "postgresql",
 	}),
 	trustedOrigins: [process.env.CORS_ORIGIN || ""],
 	emailAndPassword: {
-		enabled: true
+		enabled: true,
+		requireEmailVerification: false,
 	},
 	socialProviders: {
 		github: {
@@ -26,11 +48,10 @@ export const auth = betterAuth({
 		},
 	},
 	plugins: [
-		customSession(async ({user}) => {
+		customSession(async ({ user }) => {
 			const roles = await userService.getUserRole(user.id);
-			const userWithRole = roles.data
-			return {userWithRole }; 
+			const userWithRole = roles.data;
+			return { userWithRole };
 		})
-	]
-	
+	],
 });

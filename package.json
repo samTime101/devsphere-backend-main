@@ -12,19 +12,25 @@
     "studio": "prisma studio",
     "generate": "prisma generate",
     "migrate": "prisma migrate dev",
-    "pull": "prisma db pull && prisma generate"
+    "pull": "prisma db pull && prisma generate",
+    "seed": "tsx prisma/seed.ts",
+    "test": "pnpm vitest ./src/tests/order.test.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.15.0",
     "@prisma/extension-accelerate": "^2.0.2",
+    "axios": "^1.12.2",
     "bcrypt": "^6.0.0",
     "better-auth": "^1.3.9",
+    "cloudinary": "^2.7.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^17.2.1",
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
     "morgan": "^1.10.1",
+    "multer": "^2.0.2",
+    "multer-storage-cloudinary": "^4.0.0",
     "nodemon": "^3.1.10",
     "zod": "^4.1.8"
   },
@@ -35,12 +41,21 @@
     "@types/express": "^5.0.1",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/morgan": "^1.9.10",
+    "@types/multer": "^2.0.0",
     "@types/node": "^22.13.11",
+    "@types/supertest": "^6.0.3",
     "prisma": "^6.15.0",
+    "supertest": "^7.1.4",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
     "tsdown": "^0.14.1",
     "tsx": "^4.20.5",
-    "typescript": "^5.8.2"
+    "typescript": "^5.8.2",
+    "vite": "^7.1.5",
+    "vite-tsconfig-paths": "^5.1.4",
+    "vitest": "^3.2.4"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
   }
 }
