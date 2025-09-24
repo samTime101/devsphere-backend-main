@@ -38,3 +38,14 @@ describe('DELETE /api/event/:id', () => {
   });
 });
 
+
+
+// UUID FORMAT INVALID
+describe('DELETE /api/event/:id', () => {
+  it('RETURNS 400 IF INVALID UUID IS PROVIDED', async () => {
+    const res = await request(app)
+    .delete('/api/event/invalid-uuid');
+    expect(res.status).toBe(400);
+    expect(res.body.success).toBe(false);
+  });
+});

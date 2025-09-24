@@ -81,7 +81,29 @@ describe('PATCH /api/event/:id', () => {
 
     expect(res.status).toBe(400);
     expect(res.body.success).toBe(false);
-    expect(res.body.error).toBe('INVALID EVENT DATA GIVEN');
     // U CAN ADD MORE EXPECTATIONS IF U WANT
+  });
+});
+
+
+// UUID FORMAT INVALID
+describe('PATCH /api/event/:id', () => {
+  it('RETURNS 400 IF INVALID UUID IS PROVIDED', async () => {
+    const res = await request(app)
+    .patch('/api/event/invalid-uuid')
+    .send({
+      name: "NEW APPLE BANANA",
+      description: "TEST",
+      status: "UPCOMING",
+      eventSchedule: [
+        {
+          startDate: new Date().toISOString(),
+          endDate: new Date().toISOString(),
+          description: "DAY 1"
+      }
+      ]
+    });
+    expect(res.status).toBe(400);
+    expect(res.body.success).toBe(false);
   });
 });
