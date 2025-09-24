@@ -33,3 +33,11 @@ export const eventSchema = z.object({
 // TYPE EXPORTS
 export type Event = z.infer<typeof eventSchema>;
 export type EventSchedule = z.infer<typeof eventScheduleSchema>;
+
+//  INFO : THIS EXACT SCHEMA WAS DEFINED ALREADY ON user.schema.ts FILE,
+//  IT WOULD BE BETTER TO CREATE A NEW FILE NAMED common.schema.ts AND EXPORT IT FROM THERE
+// ALSO .string.uuid IS DEPRECATED SO I USED z.uuid()
+
+export const eventParamsSchema = z.object({
+    id: z.uuid("INVALID EVENT UUID")
+});

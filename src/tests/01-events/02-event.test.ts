@@ -23,3 +23,13 @@ describe('GET /api/event/:id', () => {
     // U CAN ADD MORE EXPECTATIONS IF U WANT
   });
 });
+
+// INVALID UUID FORMAT
+describe('GET /api/event/:id', () => {
+  it('RETURNS 400 IF INVALID UUID IS PROVIDED', async () => {
+    const res = await request(app)
+    .get('/api/event/invalid-uuid');
+    expect(res.status).toBe(400);
+    expect(res.body.success).toBe(false);
+  });
+});

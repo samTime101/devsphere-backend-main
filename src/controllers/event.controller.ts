@@ -15,28 +15,11 @@ import { HTTP } from '@/utils/constants';
 // EVENT TYPE
 import type { Event } from '@/lib/zod/event.schema';
 
-// EVENT PARSER
-import eventParser from '@/parser/events/event.parser';
-
-
-// REMOVEEVENT AND EDIT EVENT LEFT
-
 class EventController {
     async createEvent(req: Request, res: Response) {
         try {
-            // PARSING AND VALIDATION
-            const [parseError, eventData] : [string | null, Event | null] = await eventParser(req.body);
-            // IF PARSING ERROR OCCURS
-            if (parseError) {
-                const errorResponse = ErrorResponse(
-                    HTTP.BAD_REQUEST,
-                    parseError
-                );
-                return res.status(HTTP.BAD_REQUEST).json(errorResponse);
-            }
-            // AT THIS POINT **eventData** IS GUARANTEED TO BE NON-NULL DUE TO PARSER LOGIC
-            // CALLING SERVICE TO CREATE EVENT
-            const result = await eventService.createEventService(eventData as Event);
+            const eventData : Event = (req.body)
+            const result = await eventService.createEventService(eventData);
             // IF SERVICE RETURNS ERROR
             if (!result.success) {
                 const errorResponse = ErrorResponse(
@@ -133,16 +116,7 @@ class EventController {
                 );
                 return res.status(HTTP.BAD_REQUEST).json(errorResponse);
             }
-            // PARSING AND VALIDATION
-            const [parseError, eventData] : [string | null, Event | null] = await eventParser(req.body);
-            // IF PARSING ERROR OCCURS
-            if (parseError) {
-                const errorResponse = ErrorResponse(
-                    HTTP.BAD_REQUEST,
-                    parseError
-                );
-                return res.status(HTTP.BAD_REQUEST).json(errorResponse);
-            }
+            const eventData: Event = (req.body);
             // CALLING SERVICE TO UPDATE EVENT
             const result = await eventService.updateEventService(eventId, eventData as Event);
             // IF SERVICE RETURNS ERROR
