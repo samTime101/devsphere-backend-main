@@ -18,11 +18,20 @@ import projectRouter from "./routers/project.router";
 
 const requiredEnvVars = [
   'CORS_ORIGIN',
-  'GITHUB_CLIENT_ID',
-  'GITHUB_SECRET',
   'BETTER_AUTH_SECRET',
   'BETTER_AUTH_URL'
 ];
+
+// OPTIONAL ENV VARS
+const optionalEnvVars = ["GITHUB_CLIENT_ID", "GITHUB_SECRET"];
+optionalEnvVars.forEach((env) => {
+  if (!process.env[env]) {
+    process.env[env] = "";
+  }
+  console.info(`${env} IS ${process.env[env] ? "CONFIGURED" : "NOT CONFIGURED DEFAULTING TO EMPTY STRING"}`);
+});
+
+
 
 function validateEnvironment() {
   const missing = requiredEnvVars.filter(env => !process.env[env]);
