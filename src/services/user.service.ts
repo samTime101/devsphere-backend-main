@@ -77,7 +77,7 @@ class UserService {
                 return { success: false, error };
             }
 
-            const totalPages = Math.ceil((totalCount || 0) / limit);
+            const totalPages = Math.ceil((Number(totalCount) || 0) / limit);
             const hasNextPage = page < totalPages;
             const hasPrevPage = page > 1;
 

@@ -16,6 +16,34 @@ import tagRouter from "./routers/tag.router";
 import contributorRouter from "./routers/contributor.router";
 import projectRouter from "./routers/project.router";
 
+const requiredEnvVars = [
+  'CORS_ORIGIN',
+  'GITHUB_CLIENT_ID',
+  'GITHUB_SECRET',
+  'BETTER_AUTH_SECRET',
+  'BETTER_AUTH_URL'
+];
+
+function validateEnvironment() {
+  const missing = requiredEnvVars.filter(env => !process.env[env]);
+  if (missing.length > 0) {
+    console.error('❌ Missing required environment variables:', missing.join(', '));
+    console.log('💡 Please check your .env file and ensure all required variables are set');
+    process.exit(1);
+  }
+  console.log('✅ Environment variables validated');
+}
+
+async function checkDatabaseConnection() {
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+    console.log('✅ Database connection successful');
+  } catch (error) {
+    console.error('❌ Database connection failed:', (error as Error).message);
+    process.exit(1);
+  }
+}
+
 const app = express();
 const port = process.env.PORT || 3000;
 const NODE_ENV = process.env.NODE_ENV || "development";
@@ -91,9 +119,30 @@ app.use("/api/tags", tagRouter);
 app.use("/api/contributors", contributorRouter);
 app.use("/api/projects", projectRouter);
 
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
-});
+async function startServer() {
+  try {
+    console.log('🚀 Starting DevSphere Backend...');
+    
+    validateEnvironment();
+    
+    await checkDatabaseConnection();
+    
+    // Start the server
+    app.listen(port, () => {
+      console.log(`🌐 Server running on port ${port}`);
+      console.log(`📊 Environment: ${NODE_ENV}`);
+      console.log(`🔗 CORS Origin: ${process.env.CORS_ORIGIN}`);
+      console.log('✨ Server startup complete!');
+    });
+    
+  } catch (error) {
+    console.error('💥 Server startup failed:', (error as Error).message);
+    process.exit(1);
+  }
+}
+
+// Start the server
+startServer();
 
 // FOR TESTING
 export default app;

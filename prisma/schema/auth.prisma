@@ -1,16 +1,17 @@
 model User {
-  id            String    @id @default(uuid())
-  email         String    @unique @db.VarChar(255)
-  role          Role      @default(MODERATOR)
-  memberId      String?   @map("member_id")
-  createdAt     DateTime  @default(now()) @map("created_at")
-  updatedAt     DateTime  @updatedAt @map("updated_at")
-  emailVerified Boolean   @default(false)
+  id            String      @id @default(uuid())
+  email         String      @unique @db.VarChar(255)
+  role          Role        @default(MODERATOR)
+  memberId      String?     @map("member_id")
+  createdAt     DateTime    @default(now()) @map("created_at")
+  updatedAt     DateTime    @updatedAt @map("updated_at")
+  emailVerified Boolean     @default(false)
   image         String?
   name          String
   accounts      Account[]
   sessions      Session[]
-  member        member?   @relation(fields: [memberId], references: [id])
+  member        member?     @relation(fields: [memberId], references: [id])
+  audits        AuditLogs[]
 
   @@map("user")
 }
@@ -146,9 +147,41 @@ model member {
   @@map("members")
 }
 
+model AuditLogs {
+  id        String     @id @default(uuid())
+  action    ActionType @default(CREATE)
+  userId    String
+  entity    Models
+  entityId  String
+  timestamp DateTime   @default(now())
+  changes   Json?
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([timestamp])
+  @@index([userId])
+  @@index([entity, entityId])
+}
+
 enum MemberStatus {
   ACTIVE
   INACTIVE
+}
+
+enum ActionType {
+  CREATE
+  UPDATE
+  DELETE
+}
+
+enum Models {
+  USER
+  MEMBER
+  EVENT
+  PROJECT
+  PROJECTCONTRIBUTORS
+  EVENTSCHEDULE
+  CONTRIBUTOR
+  TAG
 }
 
 enum Role {
