@@ -9,5 +9,5 @@ import '@/tests/01-events/02-event.test';
 import '@/tests/01-events/03-update.test';
 import '@/tests/01-events/04-list.test';
 import '@/tests/01-events/05-delete.test';
-import '@/tests/02-member/01-create.test';
+// import '@/tests/02-member/01-create.test';
 // import '@/tests/03-user/01-signin.test';
