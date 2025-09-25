@@ -132,8 +132,10 @@ async function startServer() {
   try {
     console.log('🚀 Starting DevSphere Backend...');
     
-    // FOR GITHUB ACTIONS
-    if(NODE_ENV != "github-actions") {
+    
+    // SO I FOUND OUT THAT IN VITEST THE NODE_ENV IS SET TO "test"
+    // SO NO NEED TO SET IT MANUALLY IN GITHUB ACTIONS
+    if(NODE_ENV != "test") {
       validateEnvironment();
       await checkDatabaseConnection();
     }
