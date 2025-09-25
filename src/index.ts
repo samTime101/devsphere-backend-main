@@ -132,9 +132,11 @@ async function startServer() {
   try {
     console.log('🚀 Starting DevSphere Backend...');
     
-    validateEnvironment();
-    
-    await checkDatabaseConnection();
+    // FOR GITHUB ACTIONS
+    if(NODE_ENV != "github-actions") {
+      validateEnvironment();
+      await checkDatabaseConnection();
+    }
     
     // Start the server
     app.listen(port, () => {
