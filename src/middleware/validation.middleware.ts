@@ -70,3 +70,29 @@ export function validateQuery<T extends ZodTypeAny>(schema: T) {
         }
     };
 }
+
+export function validateFormData(bodySchema: ZodTypeAny, fileTypesSchema: ZodTypeAny) {
+    return (req: Request, res: Response, next: NextFunction) => {
+        try {
+            if (!req.body || !req.body.eventData || !req.body.imageFileTypes) {
+                return res.status(HTTP.BAD_REQUEST).json(ErrorResponse(HTTP.BAD_REQUEST, 'eventdata and imagetype are both required'));
+            }
+            req.body.eventData = bodySchema.parse(JSON.parse(req.body.eventData));
+            req.body.imageFileTypes = fileTypesSchema.parse(JSON.parse(req.body.imageFileTypes));
+            next();
+        } catch (error) {
+            if (error instanceof ZodError) {
+                const errorMessages = error.issues.map(issue => ({
+                    field: issue.path.length > 0 ? issue.path.join('.') : 'formData',
+                    message: issue.message,
+                    code: issue.code,
+                }));
+
+                res.status(HTTP.BAD_REQUEST).json(ErrorResponse(HTTP.BAD_REQUEST, 'Invalid form data', errorMessages));
+            } else {
+                console.error('error', error);
+                res.status(HTTP.INTERNAL).json(ErrorResponse(HTTP.INTERNAL, 'Internal Server Error'));
+            }
+        }
+    };
+}
