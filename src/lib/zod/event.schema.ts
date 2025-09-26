@@ -1,7 +1,14 @@
-// SAMIP REGMI
-// SEP 13 2025
-import { z } from 'zod';
+/**
+ * @file        event.schema.ts
+ * @fileoverview Schema definitions for event-related data
+ * @author      Samip Regmi (samTime101)
+ * @date        2025-09-18
+ * @since       2025-09-26
+ * @module      services/event.service
+ * @requires    zod
+ */
 
+import { z } from 'zod';
 
 // *.strict()* PREVENTS ADDITIONAL FIELDS OTHER THAN DEFINED ONES
 
@@ -13,6 +20,7 @@ import { z } from 'zod';
 
 // TRIED ADDING DIRECT DATE FILED **z.date()** BUT IT WAS GIVING ERROR SO I USED STRING AND CONVERTED TO DATE IN SERVICE LAYER
 // JSON MA DIRECT DATE OBJECT SEND GARNA PAIDAINA RAIXA
+
 export const eventScheduleSchema  = z.object({
     // OPTIONAL ID
     id: z.string().optional(),
@@ -21,19 +29,29 @@ export const eventScheduleSchema  = z.object({
     description: z.string().min(1,"DESCRIPTION IS REQUIRED"),
 }).strict();
 
+export const eventImageSchema = z.object({
+    id: z.string().optional(),
+    imageUrl: z.url("INVALID IMAGE URL").optional(),
+    uploadedAt: z.preprocess(arg => new Date(arg as string), z.date()).optional(),
+    deletedAt: z.preprocess(arg => new Date(arg as string), z.date()).nullable().optional(),
+    imageType: z.enum(["PROMOTIONAL", "GALLERY", "GUESTS"])
+}).strict();
+
 export const eventSchema = z.object({ 
     // OPTIONAL ID
     id: z.string().optional(),
     name: z.string().min(1,"EVENT NAME IS REQUIRED"),
     description: z.string().min(1,"DESCRIPTION IS REQUIRED"),
-    status: z.enum(["UPCOMING", "ONGOING", "COMPLETED"]),
+    status: z.enum( ["UPCOMING", "ONGOING", "COMPLETED"]),
     eventSchedule: z.array(eventScheduleSchema).nonempty("AT LEAST ONE SCHEDULE IS REQUIRED"),
+    images: z.array(eventImageSchema).optional(),
 }).strict();
 
-// TYPE EXPORTS
+
+// TYPE EXPORTS | ONLY FOR TYPE CHECKING, NOT FOR RUNTIME USE
 export type Event = z.infer<typeof eventSchema>;
 export type EventSchedule = z.infer<typeof eventScheduleSchema>;
-
+export type EventImage = z.infer<typeof eventImageSchema>;
 //  INFO : THIS EXACT SCHEMA WAS DEFINED ALREADY ON user.schema.ts FILE,
 //  IT WOULD BE BETTER TO CREATE A NEW FILE NAMED common.schema.ts AND EXPORT IT FROM THERE
 // ALSO .string.uuid IS DEPRECATED SO I USED z.uuid()
