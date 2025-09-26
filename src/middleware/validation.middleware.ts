@@ -70,3 +70,42 @@ export function validateQuery<T extends ZodTypeAny>(schema: T) {
         }
     };
 }
+
+
+/**
+ * @function validateFormData
+ * @param schema 
+ * @description Middleware function to validate multipart/form-data request bodies using a Zod schema
+ * @returns either proceeds to the next middleware or returns a 400 Bad Request with validation errors
+ * @author Samip Regmi (samTime101)
+ * @date 2025-09-26
+ * @since 2025-09-26
+ */
+
+export function validateFormData<T extends ZodTypeAny>(schema: T) {
+    return (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const formData = JSON.parse(req.body.eventData);
+            req.body.eventData = schema.parse(formData);
+            console.log("VALIDATED FORM DATA:", req.body);
+            // CHECK IF NUMBER OF IMAGES MATCHES THE NUMBER OF IMAGE TYPES
+            if (req.files && formData.images && req.files.length !== formData.images.length) {
+                return res.status(HTTP.BAD_REQUEST).json(ErrorResponse(HTTP.BAD_REQUEST, 'length mismatch'));
+            }
+            next();
+        } catch (error) {
+            if (error instanceof ZodError) {
+                const errorMessages = error.issues.map(issue => ({
+                    field: issue.path.length > 0 ? issue.path.join('.') : 'formData',
+                    message: issue.message,
+                    code: issue.code,
+                }));
+
+                res.status(HTTP.BAD_REQUEST).json(ErrorResponse(HTTP.BAD_REQUEST, 'invalid form data', errorMessages));
+            } else {
+                console.error('Unexpected error during form data validation:', error);
+                res.status(HTTP.INTERNAL).json(ErrorResponse(HTTP.INTERNAL, 'Internal Server Error'));
+            }
+        }
+    };
+}
