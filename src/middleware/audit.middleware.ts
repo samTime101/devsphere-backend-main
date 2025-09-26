@@ -1,60 +1,143 @@
 import type { ActionType, Models } from "@prisma/client";
 import type { PrismaClient } from "@prisma/client/extension";
-
-
-import type { Prisma } from "@prisma/client";
 import { requestContext } from "@/context/request.context";
+
+type AuditOperation = "create" | "update" | "delete";
+
+type QueryContext = {
+    model: string;
+    operation: string;
+    args: any;
+    query: (args: any) => Promise<any>;
+};
+
+const actionsToAudit: AuditOperation[] = ["create", "update", "delete"];
+
+const modelToEnumMap: Record<string, Models> = {
+    User: "USER",
+    user: "USER",
+    member: "MEMBER",
+    Member: "MEMBER",
+    Events: "EVENT",
+    events: "EVENT",
+    EventSchedule: "EVENTSCHEDULE",
+    eventSchedule: "EVENTSCHEDULE",
+    Project: "PROJECT",
+    project: "PROJECT",
+    ProjectContributors: "PROJECTCONTRIBUTORS",
+    projectContributors: "PROJECTCONTRIBUTORS",
+    Contributor: "CONTRIBUTOR",
+    contributor: "CONTRIBUTOR",
+    Tag: "TAG",
+    tag: "TAG",
+};
+
+const resolveDelegate = (client: PrismaClient, model: string) => {
+    const exact = (client as any)[model];
+    if (exact) {
+        return exact;
+    }
+
+    const camel = model.charAt(0).toLowerCase() + model.slice(1);
+    return (client as any)[camel];
+};
+
+const resolveEntity = (model: string): Models | undefined => {
+    return modelToEnumMap[model] ?? modelToEnumMap[model.charAt(0).toUpperCase() + model.slice(1)] ?? (model.toUpperCase() as Models);
+};
+
+const shouldDebug = () => process.env.AUDIT_DEBUG === "true" || process.env.NODE_ENV === "development";
 
 export const auditMiddleware = (prisma: PrismaClient) => {
     return prisma.$extends({
-        model: {
+        query: {
             $allModels: {
-                async execute(args: any, next: (args: any) => Promise<any>) {
-                    const actionsToAudit = ["create", "update", "delete"];
+                async $allOperations({ model, operation, args, query }: QueryContext) {
+                    const op = operation as AuditOperation;
 
-                    // Only track the defined actions.
-                    if (!actionsToAudit.includes(args.action)) return next(args);
-
-                    let before: any = null;
-
-                    if (args.action === "update" || args.action === "delete") {
-                        before = await next({ ...args, action: "findUnique" })
+                    if (model === "AuditLogs" || !actionsToAudit.includes(op)) {
+                        return query(args);
                     }
 
-                    let result: any = null;
-                    const userId = requestContext.getStore()?.userId ?? "UNKNOWN";
-
-                    try {
-                        const result = await next(args)
-                    } catch (error: any) {
-                        throw new Error("Error while performing database query: ", error)
+                    const debug = shouldDebug();
+                    if (debug) {
+                        console.debug(`[AUDIT] ${model}.${operation} intercepted`);
                     }
 
-                    let changes: Record<string, { before: any, after: any }> = {};
-                    if (args.action === "update" && before) {
-                        for (const key in args.data) {
-                            if (before[key] !== result[key]) {
-                                changes[key] = { before: before[key], after: result[key] }
+                    let before: Record<string, unknown> | null = null;
+                    const delegate = resolveDelegate(prisma, model);
+
+                    if ((op === "update" || op === "delete") && delegate && args?.where) {
+                        try {
+                            before = await delegate.findUnique({ where: args.where });
+                            if (debug) {
+                                console.debug(`[AUDIT] Loaded before state for ${model}.${operation}`);
+                            }
+                        } catch (error) {
+                            if (debug) {
+                                console.debug(`[AUDIT] Failed to load before state for ${model}.${operation}`, error);
                             }
                         }
                     }
 
+                    const userId = requestContext.getStore()?.userId ?? "UNKNOWN";
+
+                    let result: any;
+                    try {
+                        result = await query(args);
+                        if (debug) {
+                            console.debug(`[AUDIT] ${model}.${operation} executed successfully (id: ${result?.id ?? "n/a"})`);
+                        }
+                    } catch (error) {
+                        if (debug) {
+                            console.error(`[AUDIT] ${model}.${operation} failed`, error);
+                        }
+                        throw error;
+                    }
+
+                    const changes: Record<string, { before: unknown; after: unknown }> = {};
+                    if (op === "update" && before && args?.data) {
+                        for (const key of Object.keys(args.data)) {
+                            const beforeValue = (before as any)[key];
+                            const afterValue = result?.[key];
+                            if (!Object.is(beforeValue, afterValue)) {
+                                changes[key] = {
+                                    before: beforeValue,
+                                    after: afterValue,
+                                };
+                            }
+                        }
+                        if (debug) {
+                            console.debug(`[AUDIT] Change set for ${model}.${operation}:`, changes);
+                        }
+                    }
+
+                    const entity = resolveEntity(model);
+
+                    if (!entity) {
+                        if (debug) {
+                            console.debug(`[AUDIT] Skipping audit log for model ${model}; no enum mapping found.`);
+                        }
+                        return result;
+                    }
 
                     await prisma.auditLogs.create({
                         data: {
-                            action: args.action.toUpperCase() as ActionType,
-                            userId: userId,
-                            entity: args.model.toUpperCase() as Models,
-                            entitiyId: result.id,
-                            changes: Object.keys(changes).length ? changes : null
+                            action: op.toUpperCase() as ActionType,
+                            userId,
+                            entity,
+                            entityId: result?.id ?? args?.where?.id ?? "UNKNOWN",
+                            changes: Object.keys(changes).length ? changes : null,
+                        },
+                    });
 
-                        }
-                    })
+                    if (debug) {
+                        console.debug(`[AUDIT] Audit log written for ${model}.${operation}`);
+                    }
 
                     return result;
-
-                }
-            }
-        }
-    })
-}
+                },
+            },
+        },
+    });
+};
