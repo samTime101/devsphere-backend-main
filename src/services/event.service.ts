@@ -44,9 +44,10 @@ const uploadEventImages = async (
     console.log(event)
   console.log("UPLOADING IMAGES TO CLOUDINARY FOLDER PATH: ", `events/${event.name}/${event.images?.map((image) => image.imageType).join("/")}`);
 
+  //seperate save garne not nested
   const uploadResults = await Promise.all(
-    imageFiles.map((file) =>
-      uploadImageToCloudinary(file.path, { folder: `events/${event.name}/${event.images?.map((image) => image.imageType).join("/")}` })
+    imageFiles.map((file, index) =>
+      uploadImageToCloudinary(file.path, { folder: `events/${event.name}/${event.images![index].imageType}`,})
     )
   );
 
@@ -243,9 +244,6 @@ class EventService {
      *
      */
     try {
-      // WHEN UPDATING EVENT WITH EVENT SCHEDULE,
-      // FIRST DELETE ALL THE EXISTING SCHEDULES AND EVENTS AND THEN ADD CURRENT DATA
-      // YESO GARDA SAJILO HUNXA
       const [dbError, dbEvent] = await prismaSafe(
         prisma.events.update({
           where: { id: eventId },
