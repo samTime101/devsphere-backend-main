@@ -25,7 +25,7 @@ import {
   validateParams,
   validateFormData
 } from "@/middleware/validation.middleware";
-import { eventParamsSchema, eventSchema , eventImageTypeSchema} from "@/lib/zod/event.schema";
+import { eventParamsSchema, eventSchema} from "@/lib/zod/event.schema";
 import upload from "@/lib/multer";
 
 // ROUTER INITIALIZATION
@@ -46,7 +46,7 @@ eventRouter.get(
 eventRouter.post(
   "/",
   upload.array("imageFiles"),
-  validateFormData(eventSchema, eventImageTypeSchema),
+  validateFormData(eventSchema),
   eventController.createEvent
 );
 eventRouter.patch(

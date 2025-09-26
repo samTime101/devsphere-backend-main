@@ -71,14 +71,16 @@ export function validateQuery<T extends ZodTypeAny>(schema: T) {
     };
 }
 
-export function validateFormData(bodySchema: ZodTypeAny, fileTypesSchema: ZodTypeAny) {
+export function validateFormData<T extends ZodTypeAny>(schema: T) {
     return (req: Request, res: Response, next: NextFunction) => {
         try {
-            if (!req.body || !req.body.eventData || !req.body.imageFileTypes) {
-                return res.status(HTTP.BAD_REQUEST).json(ErrorResponse(HTTP.BAD_REQUEST, 'eventdata and imagetype are both required'));
+            const formData = JSON.parse(req.body.eventData);
+            req.body.eventData = schema.parse(formData);
+            console.log("VALIDATED FORM DATA:", req.body);
+            // CHECK IF NUMBER OF IMAGES MATCHES THE NUMBER OF IMAGE TYPES
+            if (req.files && formData.images && req.files.length !== formData.images.length) {
+                return res.status(HTTP.BAD_REQUEST).json(ErrorResponse(HTTP.BAD_REQUEST, 'length mismatch'));
             }
-            req.body.eventData = bodySchema.parse(JSON.parse(req.body.eventData));
-            req.body.imageFileTypes = fileTypesSchema.parse(JSON.parse(req.body.imageFileTypes));
             next();
         } catch (error) {
             if (error instanceof ZodError) {
@@ -88,9 +90,9 @@ export function validateFormData(bodySchema: ZodTypeAny, fileTypesSchema: ZodTyp
                     code: issue.code,
                 }));
 
-                res.status(HTTP.BAD_REQUEST).json(ErrorResponse(HTTP.BAD_REQUEST, 'Invalid form data', errorMessages));
+                res.status(HTTP.BAD_REQUEST).json(ErrorResponse(HTTP.BAD_REQUEST, 'invalid form data', errorMessages));
             } else {
-                console.error('error', error);
+                console.error('Unexpected error during form data validation:', error);
                 res.status(HTTP.INTERNAL).json(ErrorResponse(HTTP.INTERNAL, 'Internal Server Error'));
             }
         }

@@ -23,7 +23,6 @@ import prisma from "@/db/prisma.js";
 import type {
   Event,
   EventSchedule,
-  EventImageType,
   EventImage,
 } from "@/lib/zod/event.schema";
 import { uploadImageToCloudinary } from "@/utils/cloudinary.uploader.ts";
@@ -31,45 +30,31 @@ import { uploadImageToCloudinary } from "@/utils/cloudinary.uploader.ts";
 /**
  * @function uploadEventImage
  * @description Uploads event images to Cloudinary and returns their URLs along with their types
- * @param {string} eventName - The name of the event
  * @param {Express.Multer.File[]} imageFiles - The image files to upload
- * @param {EventImageType[]} imageTypes - The types of the images
- * @returns {Promise<[string[], EventImageType[]]>} - A promise that resolves to a tuple containing the image URLs and their types
- * @throws {Error} - Throws if any image upload fails
- * @example
- * const [urls, types] = await uploadEventImage('My Event', imageFiles, ["PROMOTIONAL", "GALLERY"]);
  */
 
-const uploadEventImage = async (
-  eventName: string,
-  imageFiles: Express.Multer.File[],
-  imageTypes: EventImageType[]
-): Promise<[string[], EventImageType[]]> => {
-  try {
-    const uploadPromises = imageFiles.map((file, index) => {
-      const imageType = imageTypes[index];
-      const folder = imageType.toLowerCase();
+const uploadEventImages = async (
+  event: Event,
+  imageFiles: Express.Multer.File[]
+): Promise<EventImage[]> => {
+    // console.log(event.status)
+    // event ko id ta event db ma save vaye paxi aauxa and this shit is before pusing event data to db
+    // that means we cant access id of event before it is pushed to db 
+    // name is only option , cant think of other as of now
+  
+    console.log(event)
+  console.log("UPLOADING IMAGES TO CLOUDINARY FOLDER PATH: ", `events/${event.name}/${event.images?.map((image) => image.imageType).join("/")}`);
 
-      return uploadImageToCloudinary(file.path, {
-        folder: `events/${eventName}/${folder}`,
-      });
-    });
+  const uploadResults = await Promise.all(
+    imageFiles.map((file) =>
+      uploadImageToCloudinary(file.path, { folder: `events/${event.name}/${event.images?.map((image) => image.imageType).join("/")}` })
+    )
+  );
 
-    const uploadResults = await Promise.all(uploadPromises);
-    // if even eeuta ma fail vayo vane error throw garne
-    if (
-      uploadResults.some((result) => !result.success) ||
-      uploadResults.length !== imageFiles.length
-    ) {
-      throw new Error("FAILED UPLOADING SOME IMAGES");
-    }
-    // guranteed success here, mathi nai check garisakeko xa
-    const urls: string[] = uploadResults.map((result) => result.url!);
-    return [urls, imageTypes];
-  } catch (error) {
-    console.error("ERROR UPLOADING EVENT IMAGES:", error);
-    throw error;
-  }
+  return uploadResults.map((result, index) => ({
+    imageUrl: result.url!,
+    imageType: event.images![index].imageType,
+  }));
 };
 
 /**
@@ -81,7 +66,6 @@ class EventService {
   async createEventService(
     eventData: Event,
     imageFiles: Express.Multer.File[],
-    imageFileTypes: EventImageType[]
   ): Promise<{ success: boolean; error?: string; data?: Event }> {
     /**
      * @method createEventService
@@ -97,18 +81,11 @@ class EventService {
     try {
       if (imageFiles && imageFiles.length > 0) {
         console.log("UPLOADING IMAGES TO CLOUDINARY");
-        const uploadResults = await uploadEventImage(
-          eventData.name,
+        const uploadResults = await uploadEventImages(
+          eventData as Event,
           imageFiles as Express.Multer.File[],
-          imageFileTypes as EventImageType[]
         );
-        const imageUrls: string[] = uploadResults[0];
-        const imageTypes: EventImageType[] = uploadResults[1];
-        console.log("IMAGE URLS:", imageUrls);
-        eventData.images = imageUrls.map((url, index) => ({
-          imageUrl: url,
-          imageType: imageTypes[index],
-        }));
+        eventData.images = uploadResults;
       }
     } catch (error) {
       console.log(`CLOUDINARY UPLOAD ERROR: ${error}`);
@@ -148,12 +125,12 @@ class EventService {
           endDate: schedule.endDate,
           description: schedule.description,
         })),
-        images: dbEvent.EventImage.map((image: EventImage) => ({
+        images: dbEvent.EventImage.map((image) => ({
           id: image.id,
-          imageUrl: image.imageUrl,
+          imageUrl: image.imageUrl ?? undefined,
           imageType: image.imageType,
-        })),
-      };
+        })),  
+        };
       // ONLY SEND EVENT CREATION DATA !DONT SEND ERROR MESSAGE SEND NULL INSTEAD
       return { success: true, data: createdEvent };
     } catch (error) {
@@ -198,9 +175,9 @@ class EventService {
           endDate: schedule.endDate,
           description: schedule.description,
         })),
-        images: dbEvent.EventImage.map((image: EventImage) => ({
+        images: dbEvent.EventImage.map((image) => ({
           id: image.id,
-          imageUrl: image.imageUrl,
+          imageUrl: image.imageUrl ?? undefined,
           imageType: image.imageType,
         })),
       };
@@ -247,9 +224,9 @@ class EventService {
           endDate: schedule.endDate,
           description: schedule.description,
         })),
-        images: event.EventImage.map((image: EventImage) => ({
+        images: event.EventImage.map((image) => ({
           id: image.id,
-          imageUrl: image.imageUrl,
+          imageUrl: image.imageUrl ?? undefined,
           imageType: image.imageType,
         })),
       }));
@@ -285,6 +262,7 @@ class EventService {
             description: eventData.description,
             status: eventData.status,
             EventSchedule: {
+              // DATA XA VANE UPDATE NATRA ADD DATA
               upsert:
                 eventData.eventSchedule?.map((schedule) => ({
                   where: { id: schedule.id },
@@ -340,9 +318,9 @@ class EventService {
           endDate: schedule.endDate,
           description: schedule.description,
         })),
-        images: dbEvent.EventImage.map((image: EventImage) => ({
+        images: dbEvent.EventImage.map((image) => ({
           id: image.id,
-          imageUrl: image.imageUrl,
+          imageUrl: image.imageUrl ?? undefined,
           imageType: image.imageType,
         })),
       };

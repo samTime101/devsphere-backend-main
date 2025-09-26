@@ -20,7 +20,7 @@ import type { Request, Response } from "express";
 import { ErrorResponse, SuccessResponse } from "@/dtos/index.js";
 import { eventService } from "@/services/event.service";
 import { HTTP } from "@/utils/constants";
-import type { Event, EventImageType  } from "@/lib/zod/event.schema";
+import type { Event  } from "@/lib/zod/event.schema";
 //temporary parsing of eventtype and eventdata from form data to json
 
 
@@ -41,13 +41,11 @@ class EventController {
      */
     try {
       // aaile chai we are sending multipart form data so we have to parse the json data from the form data
-      const eventData: Event = req.body.eventData
-      const imageFileTypes: EventImageType[] = req.body.imageFileTypes   
+      const eventData: Event = req.body.eventData;
       const imageFiles = req.files as Express.Multer.File[];
       const result = await eventService.createEventService(
-        eventData,
-        imageFiles,
-        imageFileTypes
+        eventData as Event,
+        imageFiles as Express.Multer.File[],
       );
       // IF SERVICE RETURNS ERROR
       if (!result.success) {

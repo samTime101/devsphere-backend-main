@@ -138,7 +138,7 @@ model EventSchedule {
 
 model EventImage{
     id          String          @id @default(uuid())
-    imageUrl   String          @map("image_url")
+    imageUrl    String?          @map("image_url") 
     imageType   EventImageType  @map("image_type")
     uploadedAt  DateTime        @default(now()) @map("uploaded_at")
     deletedAt   DateTime?       @map("deleted_at")
