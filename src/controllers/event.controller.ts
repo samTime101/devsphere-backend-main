@@ -3,7 +3,7 @@
  * @fileOverview Controller for event-related operations
  * @author      Samip Regmi (samTime101)
  * @date        2025-09-14
- * @since       2025-09-26
+ * @since       2025-09-27
  * @requires    express
  * @requires    eventService
  * @requires    ErrorResponse
@@ -27,14 +27,14 @@ import type { Event  } from "@/lib/zod/event.schema";
  */
 
 class EventController {
+  /**
+   * @method createEvent
+   * @description Creates a new event with the provided data and images
+   * @param {Request} req - Express request object containing event data and image files
+   * @param {Response} res - Express response object for sending responses
+   * @returns {Promise<Response>} - JSON response indicating success or failure of event creation
+   */
   async createEvent(req: Request, res: Response) {
-    /**
-     * @method createEvent
-     * @description Creates a new event with the provided data and images
-     * @param {Request} req - Express request object containing event data and image files
-     * @param {Response} res - Express response object for sending responses
-     * @returns {Promise<Response>} - JSON response indicating success or failure of event creation
-     */
     try {
       // aaile chai we are sending multipart form data so we have to parse the json data from the form data
       const eventData: Event = req.body.eventData;
@@ -68,14 +68,14 @@ class EventController {
       return res.status(HTTP.INTERNAL).json(errorResponse);
     }
   }
+  /**
+   * @method getEvent
+   * @description Fetches an event by its ID
+   * @param {Request} req - Express request object containing event ID in params
+   * @param {Response} res - Express response object for sending responses
+   * @returns {Promise<Response>} - JSON response containing the event data or an error message
+   */
   async getEvent(req: Request, res: Response) {
-    /**
-     * @method getEvent
-     * @description Fetches an event by its ID
-     * @param {Request} req - Express request object containing event ID in params
-     * @param {Response} res - Express response object for sending responses
-     * @returns {Promise<Response>} - JSON response containing the event data or an error message
-     */
     try {
       const eventId = req.params.id;
       if (!eventId) {
@@ -110,14 +110,14 @@ class EventController {
       return res.status(HTTP.INTERNAL).json(errorResponse);
     }
   }
+  /**
+   * @method listEvent
+   * @description Fetches all events
+   * @param {Request} req - Express request object
+   * @param {Response} res - Express response object for sending responses
+   * @returns {Promise<Response>} - JSON response containing the list of events or an error message
+   */
   async listEvent(req: Request, res: Response) {
-    /**
-     * @method listEvent
-     * @description Fetches all events
-     * @param {Request} req - Express request object
-     * @param {Response} res - Express response object for sending responses
-     * @returns {Promise<Response>} - JSON response containing the list of events or an error message
-     */
     try {
       const result = await eventService.listEventService();
       // UTAI SERVICE BATAI ERROR AAUXA
@@ -144,14 +144,14 @@ class EventController {
       return res.status(HTTP.INTERNAL).json(errorResponse);
     }
   }
+  /**
+   * @method updateEvent
+   * @description Updates an existing event with the provided data
+   * @param {Request} req - Express request object containing event ID in params and updated event data in body
+   * @param {Response} res - Express response object for sending responses
+   * @returns {Promise<Response>} - JSON response indicating success or failure of event update
+   */
   async updateEvent(req: Request, res: Response) {
-    /**
-     * @method updateEvent
-     * @description Updates an existing event with the provided data
-     * @param {Request} req - Express request object containing event ID in params and updated event data in body
-     * @param {Response} res - Express response object for sending responses
-     * @returns {Promise<Response>} - JSON response indicating success or failure of event update
-     */
     try {
       const eventId = req.params.id;
       if (!eventId) {
@@ -161,11 +161,17 @@ class EventController {
         );
         return res.status(HTTP.BAD_REQUEST).json(errorResponse);
       }
-      const eventData: Event = req.body;
+      const eventData: Event = req.body.eventData;
+      const imageFiles = req.files as Express.Multer.File[] | undefined;
+
+      console.log("EVENT DATA IN CONTROLLER:", eventData);
+
+      // VALIDATION SHOULD HAVE BEEN DONE IN THE MIDDLEWARE
       // CALLING SERVICE TO UPDATE EVENT
       const result = await eventService.updateEventService(
         eventId,
-        eventData as Event
+        eventData as Event,
+        imageFiles as Express.Multer.File[] | undefined
       );
       // IF SERVICE RETURNS ERROR
       if (!result.success) {

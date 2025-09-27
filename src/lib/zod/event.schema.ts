@@ -3,7 +3,7 @@
  * @fileoverview Schema definitions for event-related data
  * @author      Samip Regmi (samTime101)
  * @date        2025-09-18
- * @since       2025-09-26
+ * @since       2025-09-27
  * @module      services/event.service
  * @requires    zod
  */
@@ -32,8 +32,8 @@ export const eventScheduleSchema  = z.object({
 export const eventImageSchema = z.object({
     id: z.string().optional(),
     imageUrl: z.url("INVALID IMAGE URL").optional(),
+    publicId: z.string().optional(),
     uploadedAt: z.preprocess(arg => new Date(arg as string), z.date()).optional(),
-    deletedAt: z.preprocess(arg => new Date(arg as string), z.date()).nullable().optional(),
     imageType: z.enum(["PROMOTIONAL", "GALLERY", "GUESTS"])
 }).strict();
 
