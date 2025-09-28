@@ -1,5 +1,6 @@
 import prisma from "@/db/prisma";
 import { prismaSafe } from "@/lib/prismaSafe";
+import type { Prisma } from "@prisma/client";
 import { success } from "zod";
 
 class TagServices {
@@ -87,6 +88,48 @@ class TagServices {
       return { success: true, data: tagResult };
     } catch (error) {
       console.log(`Failed to associate tags with project ${projectId}, ${error}`);
+      return { success: false, error: "Internal server error" };
+    }
+  }
+
+  async updateProjectTags(tx, projectId: string, tagIds: string[]) {
+    try {
+      const validTagIds: string[] = [];
+      for (const tagId of tagIds) {
+        const isTagExists = await tagServices.checkTagExists(tagId);
+        if (!isTagExists.success) {
+          throw new Error(`Tag with id ${tagId} does not exist`);
+        }
+        // Only add valid tag IDs
+        validTagIds.push(tagId);
+      }
+
+      const currentProjectTags = await tx.projectTags.findMany({ where: { projectId } });
+      const currentProjectTagIds = currentProjectTags.map((t) => t.tagId);
+
+      // Add only tags that are in request but not in DB
+      // Tags that are in both should be left as is
+      const tagsToAdd = validTagIds.filter((id) => !currentProjectTagIds.includes(id));
+
+      // Remove only tags that are in DB but not in request
+      const tagsToRemove = currentProjectTagIds.filter((id) => !validTagIds.includes(id));
+
+      if (tagsToAdd.length > 0) {
+        await tx.projectTags.createMany({
+          data: tagsToAdd.map((tagId) => ({ projectId, tagId })),
+          skipDuplicates: true,
+        });
+      }
+
+      if (tagsToRemove.length > 0) {
+        await tx.projectTags.deleteMany({
+          where: { projectId, tagId: { in: tagsToRemove } },
+        });
+      }
+
+      return { success: true, data: null };
+    } catch (error) {
+      console.log(`Failed to update project tags for project ${projectId}, ${error}`);
       return { success: false, error: "Internal server error" };
     }
   }
