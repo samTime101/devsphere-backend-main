@@ -14,7 +14,6 @@
  * @requires    uploadImageToCloudinary
  * @requires    deleteImageFromCloudinary
  * 
- * @todo        Remove whole folder on cloudinary when event is deleted
  * 
  * formatted with prettier
  * 
