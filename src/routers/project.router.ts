@@ -1,8 +1,9 @@
 import { projectController } from "@/controllers/project.controller";
+import upload from "@/lib/multer";
 import {
   createProjectSchema,
   updateProjectSchema,
-  updateProjectParamsSchema,
+  projectIdParamsSchema,
 } from "@/lib/zod/project.schema";
 import { authMiddleware, isModerator } from "@/middleware/auth.middleware";
 import { validateBody, validateParams } from "@/middleware/validation.middleware";
@@ -16,12 +17,24 @@ projectRouter.get("/", projectController.getAllProjects);
 projectRouter.use(authMiddleware);
 
 // Private Routes
-projectRouter.post("/", validateBody(createProjectSchema), projectController.addProject);
+projectRouter.post(
+  "/",
+  upload.single("thumbnail"),
+  validateBody(createProjectSchema),
+  projectController.addProject
+);
+
 projectRouter.patch(
   "/:id",
-  validateParams(updateProjectParamsSchema),
+  upload.single("thumbnail"),
+  validateParams(projectIdParamsSchema),
   validateBody(updateProjectSchema),
   projectController.updateProject
 );
 
+projectRouter.delete(
+  "/:id",
+  validateParams(projectIdParamsSchema),
+  projectController.deleteProject
+);
 export default projectRouter;

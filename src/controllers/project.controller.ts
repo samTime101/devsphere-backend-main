@@ -27,16 +27,9 @@ class ProjectController {
 
   async addProject(req: Request, res: Response) {
     try {
-      const {
-        name,
-        githubLink,
-        demoLink,
-        thumbnailUrl,
-        description,
-        techStacks,
-        tagIds,
-      }: CreateProjectInput = req.body;
-
+      const { name, githubLink, demoLink, description, techStacks, tagIds }: CreateProjectInput =
+        req.body;
+      const thumbnail = req.file;
       let repoName = getRepoNameFromGithubUrl(githubLink);
 
       const addProjectResult = await projectServices.createProject(
@@ -45,11 +38,10 @@ class ProjectController {
           githubLink,
           demoLink,
           description,
-          thumbnailUrl,
           techStacks,
           tagIds,
         },
-        repoName
+        thumbnail
       );
 
       if (!addProjectResult.success || !addProjectResult.data) {
@@ -105,8 +97,9 @@ class ProjectController {
     try {
       const projectId = req.params.id;
       const updates: UpdateProjectInput = req.body;
+      const thumbnail = req.file;
 
-      const updateProjectResult = await projectServices.updateProject(projectId, updates);
+      const updateProjectResult = await projectServices.updateProject(projectId, updates, thumbnail);
 
       if (!updateProjectResult.success || !updateProjectResult.data) {
         return res
