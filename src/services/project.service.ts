@@ -151,38 +151,6 @@ class ProjectServices {
       const [error, result] = await prismaSafe(
         prisma.$transaction(async (tx) => {
           if (cleanedData.tagIds) {
-            // const validTagIds: string[] = [];
-            // for (const tagId of cleanedData.tagIds) {
-            //   const isTagExists = await tagServices.checkTagExists(tagId);
-            //   if (!isTagExists.success) {
-            //     throw new Error(`Tag with id ${tagId} does not exist`);
-            //   }
-            //   // Only add valid tag IDs
-            //   validTagIds.push(tagId);
-            // }
-
-            // const currentProjectTags = await tx.projectTags.findMany({ where: { projectId } });
-            // const currentProjectTagIds = currentProjectTags.map((t) => t.tagId);
-
-            // // Add only tags that are in request but not in DB
-            // // Tags that are in both should be left as is
-            // const tagsToAdd = validTagIds.filter((id) => !currentProjectTagIds.includes(id));
-
-            // // Remove only tags that are in DB but not in request
-            // const tagsToRemove = currentProjectTagIds.filter((id) => !validTagIds.includes(id));
-
-            // if (tagsToAdd.length > 0) {
-            //   await tx.projectTags.createMany({
-            //     data: tagsToAdd.map((tagId) => ({ projectId, tagId })),
-            //     skipDuplicates: true,
-            //   });
-            // }
-
-            // if (tagsToRemove.length > 0) {
-            //   await tx.projectTags.deleteMany({
-            //     where: { projectId, tagId: { in: tagsToRemove } },
-            //   });
-            // }
             const updateProjectTagsResult = await tagServices.updateProjectTags(
               tx,
               projectId,
