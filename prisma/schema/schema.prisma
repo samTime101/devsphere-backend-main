@@ -109,7 +109,7 @@ model Contributor {
   id                  String                @id @default(uuid())
   name                String
   avatarUrl           String?               @map("avatar_url")
-  githubUsername      String?               @map("github_username")
+  githubUsername      String?               @map("github_username") @unique
   ProjectContributors ProjectContributors[]
 
   @@map("contributors")
@@ -122,6 +122,7 @@ model ProjectContributors {
   contributor   Contributor @relation(fields: [contributorId], references: [id], onDelete: Cascade)
   project       Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
+  @@unique([projectId, contributorId])
   @@map("project_contributors")
 }
 
