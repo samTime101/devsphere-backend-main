@@ -3,7 +3,7 @@
  * @fileOverview Router for event-related endpoints
  * @author Samip Regmi (samTime101)
  * @date    2025-09-14
- * @since   2025-09-26
+ * @since   2025-09-27
  * @see {@link https://github.com/samTime101/devsphere-backend-main/blob/develop/CONTRIBUTING.md#route-file-structure}
  * @requires express
  * @requires eventController
@@ -49,6 +49,8 @@ eventRouter.post(
 eventRouter.patch(
   "/:id",
 //   validateBody(eventSchema),
+  upload.array("imageFiles"),
+  validateFormData(eventSchema),
   validateParams(eventParamsSchema),
   eventController.updateEvent
 );
