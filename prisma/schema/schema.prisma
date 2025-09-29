@@ -153,7 +153,7 @@ model EventImage{
     imageUrl    String?          @map("image_url") 
     imageType   EventImageType  @map("image_type")
     uploadedAt  DateTime        @default(now()) @map("uploaded_at")
-    deletedAt   DateTime?       @map("deleted_at")
+    publicId    String?         @map("public_id")
     eventId     String          @map("event_id")
     event       Events          @relation(fields: [eventId], references: [id], onDelete: Cascade)
 
