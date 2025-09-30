@@ -17,21 +17,6 @@ Welcome to the DevSphere Backend project! This guide will help you understand ou
 - [Authentication & Authorization](#authentication--authorization)
 - [Code Style Guidelines](#code-style-guidelines)
 
-## Getting Started
-
-### Prerequisites
-- Node.js (v18+)
-- PostgreSQL database
-- npm or yarn package manager
-
-### Setup
-1. Clone the repository
-2. Install dependencies: `npm install`
-3. Set up environment variables (see `.env.example`)
-4. Generate Prisma client: `npm run generate`
-5. Run migrations: `npm run migrate`
-6. Start development server: `npm run dev`
-
 ## Project Structure
 
 ```
@@ -44,7 +29,7 @@ src/
 ├── utils/               # Utility functions and constants
 ├── types/               # TypeScript type definitions
 ├── dtos/                # Data Transfer Objects for responses
-├── parser/              # Input validation and parsing logic
+├── jobs/                # Background jobs and cron tasks
 ├── db/                  # Database configuration
 └── index.ts             # Application entry point
 
@@ -58,14 +43,17 @@ docs/                    # API documentation
 ## Naming Conventions
 
 ### File Naming
+
 - Use **kebab-case** for file names: `event.controller.ts`, `member.service.ts`
 - Use **camelCase** for directories: `controllers/`, `services/`
 
 ### Class Naming
+
 - Use **PascalCase** for class names: `EventController`, `MemberService`
 - Export instances using **camelCase**: `export const eventController = new EventController()`
 
 ### Function Naming
+
 - Use **camelCase** for function names: `createEvent`, `getUserRole`
 - Use descriptive verbs for CRUD operations:
   - `create` for POST operations
@@ -74,6 +62,7 @@ docs/                    # API documentation
   - `remove`/`delete` for DELETE operations
 
 ### Variable Naming
+
 - Use **camelCase** for variables: `eventData`, `userId`
 - Use **SCREAMING_SNAKE_CASE** for constants: `HTTP.INTERNAL`, `DATABASE_URL`
 
@@ -103,34 +92,34 @@ Services contain the core business logic and database operations. They follow a 
 ### Service Class Structure
 
 ```typescript
-import prisma from "@/db/prisma";
-import { prismaSafe } from "@/lib/prismaSafe";
+import prisma from '@/db/prisma';
+import { prismaSafe } from '@/lib/prismaSafe';
 
 class ExampleService {
-    async createExample(data: ExampleType) {
-        try {
-            const [dbError, result] = await prismaSafe(
-                prisma.example.create({
-                    data: {
-                        ...data
-                    }
-                })
-            );
-            
-            if (dbError) {
-                return { success: false, error: dbError };
-            }
-            
-            if (!result) {
-                return { success: false, error: 'Failed to create example' };
-            }
-            
-            return { success: true, data: result };
-        } catch (error) {
-            console.log(`Failed to create example: ${error}`);
-            return { success: false, error: 'Failed to create example' };
-        }
+  async createExample(data: ExampleType) {
+    try {
+      const [dbError, result] = await prismaSafe(
+        prisma.example.create({
+          data: {
+            ...data,
+          },
+        })
+      );
+
+      if (dbError) {
+        return { success: false, error: dbError };
+      }
+
+      if (!result) {
+        return { success: false, error: 'Failed to create example' };
+      }
+
+      return { success: true, data: result };
+    } catch (error) {
+      console.log(`Failed to create example: ${error}`);
+      return { success: false, error: 'Failed to create example' };
     }
+  }
 }
 
 export const exampleService = new ExampleService();
@@ -143,6 +132,11 @@ export const exampleService = new ExampleService();
 - `update{Resource}` - Update existing resource
 - `remove{Resource}` or `delete{Resource}` - Delete resource
 
+### Method Organization
+
+- **Public methods at the top**
+- **Private helpers at the bottom** (prefixed with `_`)
+
 ## Controller Layer Conventions
 
 Controllers handle HTTP requests, validate input, call services, and return responses.
@@ -150,41 +144,39 @@ Controllers handle HTTP requests, validate input, call services, and return resp
 ### Controller Structure
 
 ```typescript
-import type { Request, Response } from "express";
+import type { Request, Response } from 'express';
 import { ErrorResponse, SuccessResponse } from '@/dtos';
 import { HTTP } from '@/utils/constants';
 import { exampleService } from '@/services/example.service';
 import exampleParser from '@/parser/example/example.parser';
 
 class ExampleController {
-    async createExample(req: Request, res: Response) {
-        try {
-            // 1. Parse and validate input
-            const parseResult = await exampleParser(req.body);
-            if (!parseResult.success) {
-                return res.status(HTTP.BAD_REQUEST).json(
-                    ErrorResponse(HTTP.BAD_REQUEST, parseResult.error || 'Invalid data')
-                );
-            }
+  async createExample(req: Request, res: Response) {
+    try {
+      // 1. Parse and validate input
+      const parseResult = await exampleParser(req.body);
+      if (!parseResult.success) {
+        return res
+          .status(HTTP.BAD_REQUEST)
+          .json(ErrorResponse(HTTP.BAD_REQUEST, parseResult.error || 'Invalid data'));
+      }
 
-            // 2. Call service
-            const serviceResult = await exampleService.createExample(parseResult.data);
-            if (!serviceResult.success) {
-                return res.status(HTTP.INTERNAL).json(
-                    ErrorResponse(HTTP.INTERNAL, serviceResult.error || 'Failed to create')
-                );
-            }
+      // 2. Call service
+      const serviceResult = await exampleService.createExample(parseResult.data);
+      if (!serviceResult.success) {
+        return res
+          .status(HTTP.INTERNAL)
+          .json(ErrorResponse(HTTP.INTERNAL, serviceResult.error || 'Failed to create'));
+      }
 
-            // 3. Return success response
-            return res.status(HTTP.CREATED).json(
-                SuccessResponse(HTTP.CREATED, 'Created successfully', serviceResult.data)
-            );
-        } catch (error) {
-            return res.status(HTTP.INTERNAL).json(
-                ErrorResponse(HTTP.INTERNAL, 'Internal Server Error')
-            );
-        }
+      // 3. Return success response
+      return res
+        .status(HTTP.CREATED)
+        .json(SuccessResponse(HTTP.CREATED, 'Created successfully', serviceResult.data));
+    } catch (error) {
+      return res.status(HTTP.INTERNAL).json(ErrorResponse(HTTP.INTERNAL, 'Internal Server Error'));
     }
+  }
 }
 
 export const exampleController = new ExampleController();
@@ -213,10 +205,6 @@ Routes should be organized by resource and follow RESTful conventions.
 ### Route File Structure
 
 ```typescript
-import { Router } from 'express';
-import { exampleController } from '@/controllers/example.controller';
-import { authMiddleware, isAdmin } from '@/middleware/auth.middleware';
-
 const exampleRouter = Router();
 
 // Public routes
@@ -236,14 +224,14 @@ export default exampleRouter;
 
 ### RESTful Route Conventions
 
-| HTTP Method | Route Pattern | Purpose | Controller Method |
-|-------------|---------------|---------|-------------------|
-| `GET` | `/api/resource` | Get all resources | `getResources` |
-| `GET` | `/api/resource/:id` | Get single resource | `getResource` |
-| `POST` | `/api/resource` | Create new resource | `createResource` |
-| `PUT` | `/api/resource/:id` | Update entire resource | `updateResource` |
-| `PATCH` | `/api/resource/:id` | Partial update | `patchResource` |
-| `DELETE` | `/api/resource/:id` | Delete resource | `deleteResource` |
+| HTTP Method | Route Pattern       | Purpose                | Controller Method |
+| ----------- | ------------------- | ---------------------- | ----------------- |
+| `GET`       | `/api/resource`     | Get all resources      | `getResources`    |
+| `GET`       | `/api/resource/:id` | Get single resource    | `getResource`     |
+| `POST`      | `/api/resource`     | Create new resource    | `createResource`  |
+| `PUT`       | `/api/resource/:id` | Update entire resource | `updateResource`  |
+| `PATCH`     | `/api/resource/:id` | Partial update         | `patchResource`   |
+| `DELETE`    | `/api/resource/:id` | Delete resource        | `deleteResource`  |
 
 ### Route Registration in Main App
 
@@ -260,30 +248,15 @@ app.use('/api/members', memberRouter);
 
 Use the constants from `@/utils/constants`:
 
-```typescript
-export const HTTP = {
-    OK: 200,
-    CREATED: 201,
-    BAD_REQUEST: 400,
-    UNAUTHORIZED: 401,
-    FORBIDDEN: 403,
-    NOT_FOUND: 404,
-    CONFLICT: 409,
-    INTERNAL: 500,
-} as const;
-```
-
 ### Database Error Handling
 
 Always use `prismaSafe` for database operations:
 
 ```typescript
-const [error, result] = await prismaSafe(
-    prisma.model.operation()
-);
+const [error, result] = await prismaSafe(prisma.model.operation());
 
 if (error) {
-    return { success: false, error };
+  return { success: false, error };
 }
 ```
 
@@ -297,25 +270,26 @@ if (error) {
 
 ```typescript
 const [error, user] = await prismaSafe(
-    prisma.user.findUnique({
-        where: { id: userId }
-    })
+  prisma.user.findUnique({
+    where: { id: userId },
+  })
 );
 
 if (error) {
-    return { success: false, error };
+  return { success: false, error };
 }
 
 if (!user) {
-    return { success: false, error: 'User not found' };
+  return { success: false, error: 'User not found' };
 }
 ```
 
 ### Schema Changes
 
 After any Prisma schema changes:
-1. Run `npm run push` to update the database
-2. Run `npm run generate` to update the Prisma client
+
+1. Run `npx prisma migrate dev` to update the database
+2. Run `npx prisma generate` to update the Prisma client
 
 ## Type Definitions
 
@@ -328,15 +302,15 @@ After any Prisma schema changes:
 ```typescript
 // src/types/example.types.ts
 export interface Example {
-    id: string;
-    name: string;
-    createdAt: Date;
-    updatedAt: Date;
+  id: string;
+  name: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface CreateExampleRequest {
-    name: string;
-    description?: string;
+  name: string;
+  description?: string;
 }
 ```
 
@@ -347,16 +321,19 @@ Place validation schemas in `src/utils/types/`:
 ```typescript
 import { z } from 'zod';
 
-export const exampleSchema = z.object({
-    name: z.string().min(1, "Name is required"),
+export const exampleSchema = z
+  .object({
+    name: z.string().min(1, 'Name is required'),
     description: z.string().optional(),
-}).strict();
+  })
+  .strict();
 
 export type Example = z.infer<typeof exampleSchema>;
 ```
 
 ## Validation & Parsing
-use Zod validation middleware 
+
+use Zod validation middleware
 
 ## Authentication & Authorization
 
@@ -420,11 +397,10 @@ import { exampleService } from '@/services/example.service';
 
 ## Pull Request Guidelines
 
-1. **Create feature branches** from `main`
-2. **Write descriptive commit messages**
-3. **Test your changes** thoroughly
-4. **Update documentation** if needed
-5. **Follow all conventions** outlined in this guide
+1. **Write descriptive commit messages**
+2. **Test your changes** thoroughly
+3. **Update documentation** if needed
+4. **Follow all conventions** outlined in this guide
 
 ### Commit Message Format
 
