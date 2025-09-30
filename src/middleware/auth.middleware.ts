@@ -1,3 +1,4 @@
+import { requestContext } from "@/context/request.context";
 import { ErrorResponse } from "@/dtos";
 import { auth } from "@/lib/auth";
 import { HTTP } from "@/utils/constants";
@@ -10,8 +11,14 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
         const headers = fromNodeHeaders(req.headers)
         const session = await auth.api.getSession({ headers })
         if (session) {
-            req.userId = session.userWithRole?.id
-            next()
+            req.userId = session.userWithRole?.id;
+            if (req.userId) {
+                requestContext.run({ userId: req.userId }, () => {
+                    next();
+                });
+            } else {
+                return res.status(HTTP.UNAUTHORIZED).json(ErrorResponse(HTTP.UNAUTHORIZED, 'Unauthorized'));
+            }
         }
         else {
             return res.status(HTTP.UNAUTHORIZED).json(ErrorResponse(HTTP.UNAUTHORIZED, 'Unauthorized'))

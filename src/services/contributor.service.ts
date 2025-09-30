@@ -1,10 +1,47 @@
-import prisma from "@/db/prisma";
-import { prismaSafe } from "@/lib/prismaSafe";
-import axios from "axios";
-import { githubServices } from "./github.service";
-import type { GithubContributor } from "@/types/github.types";
+import prisma from '@/db/prisma';
+import { prismaSafe } from '@/lib/prismaSafe';
+import axios from 'axios';
+import { githubServices } from './github.service';
+import type { GithubContributor } from '@/types/github.types';
 
 class ContributorServices {
+  async getAllContributors() {
+    try {
+      const [error, contributors] = await prismaSafe(prisma.contributor.findMany());
+      if (error) return { success: false, error: error };
+      if (!contributors) return { success: false, error: 'No contributors found' };
+
+      return { success: true, data: contributors };
+    } catch (error) {
+      console.error('Error fetching all contributors:', error);
+      return { success: false, error: error };
+    }
+  }
+
+  async checkContributorExistence(githubUsername: string) {
+    try {
+      const [error, contributorResult] = await prismaSafe(
+        prisma.contributor.findFirst({
+          where: {
+            githubUsername: githubUsername,
+          },
+        })
+      );
+
+      if (error) {
+        return { success: false, error: error };
+      }
+
+      if (!contributorResult) {
+        return { success: false, error: 'Could not find contributor' };
+      }
+
+      return { success: true, data: contributorResult };
+    } catch (error) {
+      return { success: false, error: error };
+    }
+  }
+
   async associateContributorToProject(contributorId: string, projectId: string) {
     try {
       const [error, contributorResult] = await prismaSafe(
@@ -21,7 +58,7 @@ class ContributorServices {
       }
 
       if (!contributorResult) {
-        return { success: false, error: "Could not add contributor to project" };
+        return { success: false, error: 'Could not add contributor to project' };
       }
 
       return { success: true, data: contributorResult };
@@ -30,34 +67,58 @@ class ContributorServices {
     }
   }
 
-  /*
-    Flow
-    - Fetch all contributors for the repository.
-    - Iterate through each contributor and check if they exists in the db
-        - If yes, move forward
-        - If no, populate the user's profile using github users API
-    - Fetch the project id by using project name
-    - Add contributorId and projectId
-  */
-
-  async addContributorsToProject(repoName: string, projectId: string) {
+  async addGithubContributorsToProject(repoName: string, projectId: string) {
     try {
       const contributorResponse = await githubServices.fetchContributors(repoName);
 
-      console.log("Fetched contributors", contributorResponse);
+      // console.log('Fetched contributors', contributorResponse);
       if (!contributorResponse?.success || !contributorResponse.data) {
         return { success: false, error: contributorResponse?.error };
       }
 
+      return await this._processContributorsForProject(contributorResponse.data, projectId);
+    } catch (error) {
+      console.error('Error adding contributors to project:', error);
+      return { success: false, error: error };
+    }
+  }
+
+  async addNewGithubContributorsToProject(contributors: { login: string }[], projectId: string) {
+    try {
+      return await this._processContributorsForProject(contributors, projectId);
+    } catch (error) {
+      console.error('Error adding new GitHub contributors to project:', error);
+      return { success: false, error: 'Error adding new GitHub contributors to project' };
+    }
+  }
+
+  /**
+   * Private method to process contributors for a project
+   * Flow:
+   * - Fetch or get all contributors for the repository.
+   * - Iterate through each contributor and check if they exists in the db
+   *     - If yes, move forward and associate the contributor with the project
+   *     - If no, populate the user's profile using github users API and do the same as in "yes" condition
+   * - Add contributorId and projectId
+   */
+  private async _processContributorsForProject(
+    contributors: GithubContributor[] | { login: string }[],
+    projectId: string
+  ) {
+    try {
       const results: { contributorId: string; login: string }[] = [];
       const errors: string[] = [];
 
       await Promise.allSettled(
-        contributorResponse.data.map(async (contributor: GithubContributor) => {
+        contributors.map(async (contributor: { login: string }) => {
           try {
-            const existingContributor = await githubServices.checkContributorExistence(
-              contributor.login
-            );
+            if (!contributor.login) {
+              errors.push('Contributor has no login');
+              return;
+            }
+            console.log('Testing for the contributorr !!!', contributor.login);
+
+            const existingContributor = await this.checkContributorExistence(contributor.login);
             let contributorId: string;
 
             // If contributor does not exist, create a new one
@@ -75,8 +136,8 @@ class ContributorServices {
               const [newContributorError, newContributorResult] = await prismaSafe(
                 prisma.contributor.create({
                   data: {
-                    name: newContributorData.data.name || "Unknown",
-                    avatarUrl: contributor.avatar_url,
+                    name: newContributorData.data.name || 'Unknown',
+                    avatarUrl: newContributorData.data.avatar_url,
                     githubUsername: contributor.login,
                   },
                 })
@@ -96,8 +157,26 @@ class ContributorServices {
               // If new contributor is created in database, use its ID
               contributorId = newContributorResult.id;
             } else {
+              console.log(
+                'Contributor exists',
+                existingContributor.data?.githubUsername,
+                'having Id',
+                existingContributor.data?.id
+              );
               // If contributor exists, use existing ID
               contributorId = existingContributor.data.id;
+            }
+
+            const existingAssociation = await prisma.projectContributors.findFirst({
+              where: {
+                contributorId,
+                projectId,
+              },
+            });
+            if (existingAssociation) {
+              // If association already exists don't create association. Skip to next contributor
+              // results.push({ contributorId, login: contributor.login });
+              return;
             }
 
             const contributorToProjectResult = await this.associateContributorToProject(
@@ -122,20 +201,7 @@ class ContributorServices {
         data: results,
       };
     } catch (error) {
-      console.error("Error adding contributors to project:", error);
-      return { success: false, error: error };
-    }
-  }
-
-  async getAllContributors() {
-    try {
-      const [error, contributors] = await prismaSafe(prisma.contributor.findMany());
-      if (error) return { success: false, error: error };
-      if (!contributors) return { success: false, error: "No contributors found" };
-
-      return { success: true, data: contributors };
-    } catch (error) {
-      console.error("Error fetching all contributors:", error);
+      console.error('Error adding contributors to project:', error);
       return { success: false, error: error };
     }
   }

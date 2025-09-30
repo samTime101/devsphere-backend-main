@@ -1,52 +1,89 @@
-# my-better-t-app
+# Devsphere Backend
 
-This project was created with [Better-T-Stack](https://github.com/AmanVarshney01/create-better-t-stack), a modern TypeScript stack that combines Express, TRPC, and more.
+This is the backend service for Devsphere, built with TypeScript, Express, and Prisma. This RESTful API poweres the DevSphere community platform with features like:
 
-## Features
+## Key Features
 
-- **TypeScript** - For type safety and improved developer experience
-- **Express** - Fast, unopinionated web framework
-- **Node.js** - Runtime environment
-- **Prisma** - TypeScript-first ORM
-- **PostgreSQL** - Database engine
-- **Authentication** - Better-Auth
-- **Husky** - Git hooks for code quality
+- **User Authentication & Authorization** - Secure JWT-based authentication with role-based access control
+- **Project Management** - Complete CRUD operations for community projects with GitHub integration
+- **Event Management** - Create, manage, and track community events and activities
+- **Automated Contributor Sync** - Daily cron jobs to automatically fetch and sync GitHub contributors
+- **Member Management** - Comprehensive team member profiles and role assignments
+- **File Upload Support** - Cloudinary integration for seamless image and file uploads
 
-## Getting Started
+## Table of Contents
 
-First, install the dependencies:
+- [Prerequisites](#prerequisites)
+- [Architecture](#architecture)
+- [Installation & Setup](#installation--setup)
+- [Contributing](#contributing)
+- [Tests](#tests)
+
+## Prerequisites
+
+Before you begin, ensure you have the following installed:
+
+- **Node.js** (v18 or higher)
+- **npm** (v8 or higher)
+- **PostgreSQL** (v13 or higher)
+- **Git**
+
+## Architecture
+
+The following documents provide visual diagrams and workflow explanations for key backend processes:
+
+- [Contributor Cron Job Workflow](docs/Contributor_CRON_Architecture.MD)
+
+---
+
+## Installation & Setup
+
+### 1. Fork the Repository
+
+```bash
+git clone {your-forked-repo-url}
+cd devsphere-backend
+```
+
+### 2. Install Dependencies
 
 ```bash
 npm install
 ```
-## Database Setup
+
+### 3. Environment Variables
+
+Create a `.env` file in the root directory and add the following variables:
+
+```bash
+cp .env.example .env
+```
+
+### 4. Database Setup
 
 This project uses PostgreSQL with Prisma.
 
 1. Make sure you have a PostgreSQL database set up.
-2. Generate the Prisma client:
-```bash
-npm run db:generate
-```
 
-
-**If you make ANY changes to the Prisma schema files** (in `prisma/schema/`), you **MUST** push the changes to the database:
+2. Run migrations to set up the database schema:
 
 ```bash
-npm run db:push
+npx prisma migrate deploy
 ```
 
-This includes:
-- Adding new models/tables
-- Modifying existing fields
-- Adding/removing relationships
-- Changing field types
-- Adding/removing indexes
+3. Generate the Prisma client:
 
-**Always run `npm run db:push` after schema changes** to keep your database in sync with your schema definition.
+```bash
+npx prisma generate
+```
 
+4. Seed the database with initial data:
 
-Then, run the development server:
+```bash
+npm run prisma.seed
+```
+
+5. Start the development server:
 
 ```bash
 npm run dev
@@ -54,36 +91,28 @@ npm run dev
 
 The API is running at [http://localhost:3000](http://localhost:3000).
 
+Note: **If you make ANY changes to the Prisma schema files** (in `prisma/schema/`), you **MUST** migrate the changes to the database:
 
+```bash
+npx prisma migrate dev --name <migration_name>
+```
 
+This includes:
 
+- Adding new models/tables
+- Modifying existing fields
+- Adding/removing relationships
+- Changing field types
+- Adding/removing indexes
 
+## Contributing
 
-## Available Scripts
-
-- `npm run dev`: Start all applications in development mode
-- `npm run build`: Build all applications
-- `npm run dev:web`: Start only the web application
-- `npm run dev:server`: Start only the server
-- `npm run check-types`: Check TypeScript types across all apps
-- `npm run db:push`: Push schema changes to database
-- `npm run db:studio`: Open database studio UI
- - `npm run db:generate`: Generate prisma client
-
-
-
-
-
+Please see the [CONTRIBUTING.md](CONTRIBUTING.md) file for detailed guidelines on how to contribute to this project.
 
 ## Tests
 
 - `npx vitest src/tests/events/create.test.ts` : target a particular file
 - `npm run test` : test all
-
-
-
-
-
 
 ## Workflow test
 
@@ -92,4 +121,3 @@ The API is running at [http://localhost:3000](http://localhost:3000).
 - mock the push using `act push` **ONLY USE THIS COMMAND FOR FIRST TIME**
 - now check if the images are installed on docker `docker images`
 - now everytime u call use `act push --reuse` so instead of creating new image it uses the existing image
-  
