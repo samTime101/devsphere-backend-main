@@ -76,8 +76,8 @@ model Project {
   name                String
   githubLink          String?               @map("github_link")
   demoLink            String?               @map("demo_link")
-  techStacks          String[]              
-  description         String
+  techStacks          String[]              @map("tech_stacks")
+  description         String                @db.Text
   thumbnailUrl        String?               @map("thumbnail_url")
   createdAt           DateTime              @default(now()) @map("created_at")
   updatedAt           DateTime              @updatedAt @map("updated_at")
