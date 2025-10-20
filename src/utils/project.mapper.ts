@@ -26,7 +26,7 @@ export const mapProjects = (projects: ProjectWithRelations[]) => {
     githubLink: project.githubLink,
     demoLink: project.demoLink,
     thumbnailUrl: project.thumbnailUrl,
-    tech_stack: project.techStacks,
+    techStacks: project.techStacks,
     description: project.description,
     tags: project.ProjectTags.map((pt) => pt.tag),
     contributors: project.ProjectContributors.map((pc) => pc.contributor),
