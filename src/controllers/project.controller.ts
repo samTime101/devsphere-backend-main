@@ -43,6 +43,25 @@ class ProjectController {
     }
   }
 
+  async getProjectById(req: Request, res: Response) {
+    try {
+      const projectId = req.params.id;
+      const projectResult = await projectServices.getProjectById(projectId);
+
+      if (!projectResult.success || !projectResult.data) {
+        return res
+          .status(HTTP.BAD_REQUEST)
+          .json(ErrorResponse(HTTP.BAD_REQUEST, projectResult.error || 'Project not found'));
+      }
+
+      return res
+        .status(HTTP.OK)
+        .json(SuccessResponse(HTTP.OK, 'Project fetched successfully', projectResult.data));
+    } catch (error) {
+      console.error('Error in getProjectById controller:', error);
+      res.status(HTTP.INTERNAL).json(ErrorResponse(HTTP.INTERNAL, 'Internal Server Error'));
+    }
+  }
   async addProject(req: Request, res: Response) {
     try {
       const { name, githubLink, demoLink, description, techStacks, tagIds }: CreateProjectInput =
@@ -163,28 +182,23 @@ class ProjectController {
 
   async uploadImage(req: Request, res: Response) {
     try {
-      if (!req.file) return res
-      .status(HTTP.BAD_REQUEST)
-      .json(
-        ErrorResponse(HTTP.BAD_REQUEST, "Image is required")
-      )
-        const image = req.file;
-        
-        const uploadResult = await uploadImageToCloudinary(image!.path, {folder: "projects"})
-        if (!uploadResult.success) {
-          return res
-          .status(HTTP.BAD_REQUEST)
-          .json(
-            ErrorResponse(HTTP.BAD_REQUEST, uploadResult.error|| 'Failed to upload image.')
-          );
-        }
+      if (!req.file)
         return res
-          .status(HTTP.OK)
-          .json(
-            SuccessResponse(HTTP.OK,"Uploaded successfully", uploadResult.url)
-          );
+          .status(HTTP.BAD_REQUEST)
+          .json(ErrorResponse(HTTP.BAD_REQUEST, 'Image is required'));
+      const image = req.file;
+
+      const uploadResult = await uploadImageToCloudinary(image!.path, { folder: 'projects' });
+      if (!uploadResult.success) {
+        return res
+          .status(HTTP.BAD_REQUEST)
+          .json(ErrorResponse(HTTP.BAD_REQUEST, uploadResult.error || 'Failed to upload image.'));
+      }
+      return res
+        .status(HTTP.OK)
+        .json(SuccessResponse(HTTP.OK, 'Uploaded successfully', uploadResult.url));
     } catch (error) {
-      console.log("Error whole uploading image: ", error)
+      console.log('Error whole uploading image: ', error);
     }
   }
 }

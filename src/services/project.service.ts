@@ -7,6 +7,7 @@ import { tagServices } from './tag.service';
 import type { CreateProjectInput, UpdateProjectInput } from '@/lib/zod/project.schema';
 import cloudinary from '@/lib/cloudinary';
 import { uploadImageToCloudinary } from '@/utils/cloudinary.uploader';
+import { mapProjects } from '@/utils/project.mapper';
 
 class ProjectServices {
   async getAllProjects({ skip, limit }: { skip?: number; limit?: number }) {
@@ -53,23 +54,52 @@ class ProjectServices {
 
       const [projects, total] = projectsResult;
 
-      const mappedProjects: GetAllProjects[] = projects.map((project) => ({
-        id: project.id,
-        name: project.name,
-        githubLink: project.githubLink,
-        demoLink: project.demoLink,
-        thumbnailUrl: project.thumbnailUrl,
-        tech_stack: project.tech_stack,
-        description: project.description,
-        tags: project.ProjectTags.map((pt) => pt.tag),
-        contributors: project.ProjectContributors.map((pc) => pc.contributor),
-        createdAt: project.createdAt,
-        updatedAt: project.updatedAt,
-      }));
+      const mappedProjects = mapProjects(projects);
 
       return { success: true, data: { mappedProjects, total } };
     } catch (error) {
       console.error('Error fetching projects:', error);
+      return { success: false, error: error };
+    }
+  }
+
+  async getProjectById(projectId: string) {
+    try {
+      const [error, projectResult] = await prismaSafe(
+        prisma.project.findUnique({
+          where: { id: projectId },
+          include: {
+            ProjectTags: {
+              select: {
+                tag: true,
+              },
+            },
+            ProjectContributors: {
+              select: {
+                contributor: {
+                  select: {
+                    id: true,
+                    name: true,
+                    avatarUrl: true,
+                    githubUsername: true,
+                  },
+                },
+              },
+            },
+          },
+        })
+      );
+      if (error) {
+        return { success: false, error };
+      }
+      if (!projectResult) {
+        return { success: false, error: 'Project not found' };
+      }
+
+      const mappedProject = mapProjects([projectResult])[0];
+      return { success: true, data: mappedProject };
+    } catch (error) {
+      console.error('Error fetching project by ID:', error);
       return { success: false, error: error };
     }
   }
@@ -102,7 +132,7 @@ class ProjectServices {
             demoLink: project.demoLink,
             description: project.description,
             thumbnailUrl: thumbnailUrl,
-            tech_stack: project.techStacks,
+            techStacks: project.techStacks,
           },
         })
       );
@@ -222,7 +252,6 @@ class ProjectServices {
       return { success: false, error };
     }
   }
-
 }
 
 export const projectServices = new ProjectServices();

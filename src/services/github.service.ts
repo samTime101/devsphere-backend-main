@@ -8,19 +8,8 @@ class GithubServices {
     repoName: string
   ): Promise<{ success: boolean; data?: GithubContributor[]; error?: string }> {
     try {
-      const token = process.env.GITHUB_TOKEN;
-      if (!token) {
-        console.log('No github token found');
-        return { success: false, error: 'No GitHub token found' };
-      }
       const repositoryResponse = await axios.get(
-        `https://api.github.com/repos/BIC-Devsphere/${repoName}/contributors`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'X-GitHub-Api-Version': '2022-11-28',
-          },
-        }
+        `https://api.github.com/repos/BIC-Devsphere/${repoName}/contributors`
       );
 
       const [error, contributors] = await prismaSafe(

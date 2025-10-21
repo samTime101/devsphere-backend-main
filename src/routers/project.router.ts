@@ -9,13 +9,14 @@ import {
 import { authMiddleware, isModerator } from '@/middleware/auth.middleware';
 import { validateBody, validateParams, validateQuery } from '@/middleware/validation.middleware';
 import { Router } from 'express';
+import router from './user.router';
 
 const projectRouter = Router();
 
 // Public route
 projectRouter.get('/', validateQuery(paginationQuerySchema), projectController.getAllProjects);
-
-projectRouter.use(authMiddleware);
+projectRouter.get("/:id", validateParams(projectIdParamsSchema), projectController.getProjectById);
+projectRouter.use(authMiddleware, isModerator);
 
 // Private Routes
 projectRouter.post(

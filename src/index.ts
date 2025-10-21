@@ -55,7 +55,7 @@ const port = process.env.PORT || 3000;
 const NODE_ENV = process.env.NODE_ENV || 'development';
 const corsOptions = {
   origin: process.env.CORS_ORIGIN || '',
-  methods: ['GET', 'POST', 'OPTIONS'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
 };
