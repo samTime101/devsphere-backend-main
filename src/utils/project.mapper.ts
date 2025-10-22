@@ -1,7 +1,6 @@
-import type { GetAllProjects } from '@/types/project.types';
 import { Prisma, type Project } from '@prisma/client';
 
-type ProjectWithRelations = Prisma.ProjectGetPayload<{
+export type ProjectWithRelations = Prisma.ProjectGetPayload<{
   include: {
     ProjectTags: { select: { tag: true } };
     ProjectContributors: {
