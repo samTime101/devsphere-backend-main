@@ -7,7 +7,27 @@ import { tagServices } from './tag.service';
 import type { CreateProjectInput, UpdateProjectInput } from '@/lib/zod/project.schema';
 import cloudinary from '@/lib/cloudinary';
 import { uploadImageToCloudinary } from '@/utils/cloudinary.uploader';
-import { mapProjects } from '@/utils/project.mapper';
+import { mapProjects, type ProjectWithRelations } from '@/utils/project.mapper';
+
+const PROJECT_RESPONSE_INCLUDE = {
+  ProjectTags: {
+    select: {
+      tag: true,
+    },
+  },
+  ProjectContributors: {
+    select: {
+      contributor: {
+        select: {
+          id: true,
+          name: true,
+          avatarUrl: true,
+          githubUsername: true,
+        },
+      },
+    },
+  },
+};
 
 class ProjectServices {
   async getAllProjects({ skip, limit }: { skip?: number; limit?: number }) {
@@ -17,25 +37,7 @@ class ProjectServices {
           prisma.project.findMany({
             skip: skip,
             take: limit,
-            include: {
-              ProjectTags: {
-                select: {
-                  tag: true,
-                },
-              },
-              ProjectContributors: {
-                select: {
-                  contributor: {
-                    select: {
-                      id: true,
-                      name: true,
-                      avatarUrl: true,
-                      githubUsername: true,
-                    },
-                  },
-                },
-              },
-            },
+            include: PROJECT_RESPONSE_INCLUDE,
             orderBy: {
               updatedAt: 'desc',
             },
@@ -68,25 +70,7 @@ class ProjectServices {
       const [error, projectResult] = await prismaSafe(
         prisma.project.findUnique({
           where: { id: projectId },
-          include: {
-            ProjectTags: {
-              select: {
-                tag: true,
-              },
-            },
-            ProjectContributors: {
-              select: {
-                contributor: {
-                  select: {
-                    id: true,
-                    name: true,
-                    avatarUrl: true,
-                    githubUsername: true,
-                  },
-                },
-              },
-            },
-          },
+          include: PROJECT_RESPONSE_INCLUDE,
         })
       );
       if (error) {
@@ -201,7 +185,7 @@ class ProjectServices {
             delete cleanedData.tagIds;
           }
 
-          let updatedProjectResult: Project | null = null;
+          let updatedProjectResult: ProjectWithRelations | null = null;
 
           // Update project if there are changes
           if (Object.keys(cleanedData).length > 0 || thumbnailUrl) {
@@ -213,10 +197,14 @@ class ProjectServices {
                 ...cleanedData,
                 thumbnailUrl: thumbnailUrl,
               },
+              include: PROJECT_RESPONSE_INCLUDE,
             });
           } else {
             // If no fields to update, just fetch the current project
-            updatedProjectResult = await tx.project.findUnique({ where: { id: projectId } });
+            updatedProjectResult = await tx.project.findUnique({
+              where: { id: projectId },
+              include: PROJECT_RESPONSE_INCLUDE,
+            });
           }
           return updatedProjectResult;
         })
@@ -226,7 +214,8 @@ class ProjectServices {
 
       if (!result) return { success: false, error: 'Failed to update project' };
 
-      return { success: true, data: result };
+      const mappedProject = mapProjects([result])[0];
+      return { success: true, data: mappedProject };
     } catch (error) {
       console.error('Error updating project:', error);
       return { success: false, error };
