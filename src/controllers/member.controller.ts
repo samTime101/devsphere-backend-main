@@ -9,6 +9,7 @@ class MemberController{
         try {
             const memberData  = req.body;
             const imageFile = req.file;
+            console.log(imageFile)
 
             const result = await memberServices.createMember(
                 memberData,
@@ -18,7 +19,7 @@ class MemberController{
                 return res.status(HTTP.BAD_REQUEST).json(ErrorResponse(HTTP.BAD_REQUEST,result.error));
             }
             else {
-                return res.status(HTTP.CREATED).json(SuccessResponse(HTTP.CREATED, 'Member created successfully', result));
+                return res.status(HTTP.CREATED).json(SuccessResponse(HTTP.CREATED, 'Member created successfully', result.data));
             }
         } catch (error) {
             return res.status(HTTP.INTERNAL).json(ErrorResponse(HTTP.INTERNAL, (error as Error).message || 'Internal Server Error'));
