@@ -161,13 +161,16 @@ model EventImage {
 }
 
 model member {
-  id        String       @id @default(uuid())
-  name      String
-  avatarUrl String?      @map("avatar_url")
-  role      String
-  year      DateTime
-  status    MemberStatus
-  User      User[]
+  id            String       @id @default(uuid())
+  name          String
+  avatarUrl     String?      @map("avatar_url")
+  role          String
+  year          DateTime
+  status        MemberStatus
+  discordUrl    String?      @map("discord_url")
+  instagramUrl  String?      @map("instagram_url")
+  linkedinUrl   String?      @map("linkedin_url")
+  User          User[]
 
   @@map("members")
 }

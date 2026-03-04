@@ -3,6 +3,9 @@ export interface Member{
     role : string;
     avatarUrl : string;
     year : Date;
-    status? : "ACTIVE" | "INACTIVE"
+    status? : "ACTIVE" | "INACTIVE";
+    discordUrl? : string;
+    instagramUrl? : string;
+    linkedinUrl? : string;
 }
 
