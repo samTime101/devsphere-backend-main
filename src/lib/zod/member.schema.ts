@@ -21,6 +21,24 @@ export const createMemberSchema = z
     ),
 
     status: z.enum(["ACTIVE", "INACTIVE"]).optional(),
+
+    discordUrl: z
+      .string()
+      .url("Discord URL must be a valid URL")
+      .optional()
+      .or(z.literal("")),
+
+    instagramUrl: z
+      .string()
+      .url("Instagram URL must be a valid URL")
+      .optional()
+      .or(z.literal("")),
+
+    linkedinUrl: z
+      .string()
+      .url("LinkedIn URL must be a valid URL")
+      .optional()
+      .or(z.literal("")),
   })
   .strict(); // disallow unknown keys like "names"
 
